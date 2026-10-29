@@ -1,0 +1,2357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14634F">
+<title>Family Table</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600;700&display=swap">
+<style>/* Layout: one calm column. A 4-step guided setup, then a results area with four tabs.
+   Type: Fredoka (rounded, friendly) for headings, Atkinson Hyperlegible (made for low-vision readers) for everything else. */
+:root {
+  --bg: #F4F4F8; --surface: #FFFFFF; --soft: #EBEBF2; --ink: #1A2433; --muted: #4A5568;
+  --line: #DADAE4; --ctl: #5B6270; --primary: #14634F; --on-primary: #FFFFFF;
+  --accent: #FFC53D; --on-accent: #1A2433; --good: #1B6E2F; --good-bg: #E3F4E6;
+  --warn: #8A4300; --warn-bg: #FFEBD2; --bad: #B3261E; --bad-bg: #FDE6E4;
+  --m0: #DCEBFF; --m1: #FFE0DE; --m2: #DDF3E4; --m3: #FFF0C2; --m4: #EBDDFB; --m5: #D7F2F2;
+  --font-display: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161C; --surface: #1B222C; --soft: #2A2616; --ink: #F2F4F7; --muted: #B8C0CC;
+    --line: #323B48; --ctl: #8D97A6; --primary: #5ED1AE; --on-primary: #0B2A22;
+    --accent: #FFC93C; --on-accent: #1A1400; --good: #7BE08F; --good-bg: #1B3A24;
+    --warn: #FFB866; --warn-bg: #3D2A10; --bad: #FF8A80; --bad-bg: #4A1F1C;
+    --m0: #1F3552; --m1: #53262A; --m2: #1F4A33; --m3: #52441B; --m4: #3F2F5C; --m5: #1B4547;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161C; --surface: #1B222C; --soft: #2A2616; --ink: #F2F4F7; --muted: #B8C0CC;
+  --line: #323B48; --ctl: #8D97A6; --primary: #5ED1AE; --on-primary: #0B2A22;
+  --accent: #FFC93C; --on-accent: #1A1400; --good: #7BE08F; --good-bg: #1B3A24;
+  --warn: #FFB866; --warn-bg: #3D2A10; --bad: #FF8A80; --bad-bg: #4A1F1C;
+  --m0: #1F3552; --m1: #53262A; --m2: #1F4A33; --m3: #52441B; --m4: #3F2F5C; --m5: #1B4547;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 clamp(18px, 2.4vw, 21px)/1.5 var(--font-body);
+  padding-block: 12px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(30px, 6vw, 44px); }
+h2 { font-size: clamp(26px, 4.6vw, 34px); }
+h3 { font-size: 22px; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85em; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 4px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; font-family: var(--font-display); font-weight: 600; font-size: 26px; }
+.brand svg { width: 40px; height: 40px; }
+.hint-tag { font-size: 0.8em; padding: 4px 12px; border-radius: 99px; background: var(--soft); border: 2px solid var(--accent); }
+
+/* stepper */
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; list-style: none; margin: 0; padding: 0; }
+.steps button {
+  width: 100%; min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 16px; cursor: pointer; padding: 6px 4px; font-weight: 700; font-size: 0.82em;
+}
+.steps .num { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); border: 2px solid var(--ctl); font-family: var(--font-display); }
+.steps button[aria-current="step"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.steps button[aria-current="step"] .num { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.steps button.done .num { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+.steps .lbl { display: none; }
+@media (min-width: 560px) { .steps .lbl { display: inline; } .steps button { flex-direction: row; gap: 10px; font-size: 0.9em; } }
+
+/* cards, forms */
+.card { background: var(--surface); border: 2px solid var(--line); border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+.card.soft { background: var(--soft); }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.row > * { min-width: 0; }
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; }
+.field > label, .lab { font-weight: 700; }
+input[type=text], input[type=number], input[type=date], select {
+  min-height: 54px; padding: 8px 14px; border: 2px solid var(--ctl); border-radius: 14px; background: var(--surface); width: 100%;
+}
+input[type=checkbox] { width: 28px; height: 28px; accent-color: var(--primary); flex: none; }
+.btn {
+  min-height: 54px; padding: 10px 22px; border-radius: 99px; border: 2px solid var(--primary); background: var(--primary); color: var(--on-primary);
+  font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn.ghost { background: var(--surface); color: var(--ink); border-color: var(--ctl); }
+.btn.big { min-height: 66px; font-size: 1.15em; padding-inline: 34px; }
+.btn.small-btn { min-height: 44px; padding: 6px 16px; font-size: 0.9em; }
+.btn.danger { background: var(--surface); color: var(--bad); border-color: var(--bad); }
+.btn svg, .ic { width: 24px; height: 24px; flex: none; }
+.actions { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.stepper { display: inline-flex; align-items: center; gap: 8px; }
+.stepper .val { min-width: 56px; text-align: center; font-weight: 700; font-size: 1.25em; font-variant-numeric: tabular-nums; }
+.stepper button { width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--ctl); background: var(--surface); cursor: pointer; display: grid; place-items: center; }
+
+/* chips */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  min-height: 52px; padding: 8px 18px; border-radius: 99px; border: 2px solid var(--ctl); background: var(--surface); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; font-weight: 600;
+}
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--ink); }
+.chip[aria-pressed="true"]::before { content: "\2713"; font-weight: 800; }
+.tag { display: inline-flex; align-items: center; gap: 6px; padding: 2px 12px; border-radius: 99px; font-size: 0.78em; font-weight: 700; border: 2px solid var(--line); background: var(--surface); }
+.tag.good { background: var(--good-bg); color: var(--good); border-color: var(--good); }
+.tag.warn { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.tag.bad { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+
+/* members */
+.mtabs { display: flex; flex-wrap: wrap; gap: 10px; }
+.mtab { min-height: 58px; padding: 8px 18px; border-radius: 18px; border: 2px solid var(--ctl); cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; background: var(--surface); }
+.mtab[aria-selected="true"] { border-color: var(--ink); box-shadow: 0 0 0 3px var(--accent); }
+.avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; color: var(--ink); border: 2px solid var(--ctl); flex: none; }
+.c0 { background: var(--m0); } .c1 { background: var(--m1); } .c2 { background: var(--m2); } .c3 { background: var(--m3); } .c4 { background: var(--m4); } .c5 { background: var(--m5); }
+.member-card { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: end; padding: 14px; border: 2px solid var(--line); border-radius: 18px; }
+.member-card .avatar { width: 52px; height: 52px; font-size: 1.3em; align-self: center; }
+@media (max-width: 560px) { .member-card { grid-template-columns: auto 1fr; } .member-card .rm { grid-column: 1 / -1; } }
+.meter { padding: 14px 18px; border-radius: 16px; background: var(--soft); border: 2px solid var(--accent); display: flex; flex-direction: column; gap: 8px; }
+.meter .nums { display: flex; flex-wrap: wrap; gap: 8px 18px; font-weight: 700; }
+
+/* lists (stock, requests) */
+.list { display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0; list-style: none; }
+.item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 2px solid var(--line); border-radius: 16px; flex-wrap: wrap; }
+.item .grow { flex: 1 1 160px; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.item input[type=number] { width: 110px; min-height: 46px; }
+.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--ctl); background: var(--surface); cursor: pointer; display: grid; place-items: center; flex: none; }
+.empty { padding: 18px; border: 2px dashed var(--ctl); border-radius: 16px; text-align: center; color: var(--muted); }
+.grid-out { display: grid; grid-template-columns: auto repeat(3, 1fr); gap: 8px; align-items: center; }
+.grid-out .dl { font-weight: 700; padding-right: 6px; }
+.grid-out .chip { justify-content: center; width: 100%; padding-inline: 6px; }
+.notice { padding: 14px 18px; border-radius: 16px; border: 2px solid var(--warn); background: var(--warn-bg); color: var(--ink); display: flex; gap: 12px; align-items: flex-start; }
+.notice svg { color: var(--warn); margin-top: 2px; }
+.notice.ok { border-color: var(--good); background: var(--good-bg); }
+.notice.ok svg { color: var(--good); }
+
+/* results */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tabs button { min-height: 56px; padding: 8px 20px; border-radius: 99px; border: 2px solid var(--ctl); background: var(--surface); font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.tabs button[aria-selected="true"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.summary-line { display: flex; flex-wrap: wrap; gap: 10px; }
+.days { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 16px; }
+.day { background: var(--surface); border: 2px solid var(--line); border-radius: 22px; overflow: hidden; }
+.day > header { padding: 12px 18px; background: var(--soft); border-bottom: 2px solid var(--line); display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.day > header h3 { font-size: 21px; }
+.meal { border-top: 2px solid var(--line); }
+.meal:first-of-type { border-top: 0; }
+.meal-btn { width: 100%; text-align: left; background: none; border: 0; padding: 14px 18px; cursor: pointer; display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; min-height: 76px; }
+.meal-ic { font-size: 34px; line-height: 1; text-align: center; }
+.meal-kind { font-size: 0.78em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.meal-name { font-weight: 700; line-height: 1.25; }
+.meal-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chev { width: 24px; height: 24px; transition: transform 0.15s; }
+.meal.open .chev { transform: rotate(180deg); }
+.detail { padding: 4px 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+.detail h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: 18px; }
+.detail ul, .detail ol { margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 4px; }
+.nutr-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.nutr-row span { padding: 4px 12px; border-radius: 12px; background: var(--soft); font-weight: 700; font-variant-numeric: tabular-nums; }
+.alts { display: flex; flex-direction: column; gap: 8px; }
+.alt { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; }
+.skip-row, .none-row { padding: 18px; color: var(--muted); display: flex; gap: 12px; align-items: center; }
+
+/* grocery */
+.groc { display: flex; flex-direction: column; gap: 10px; }
+.groc label { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 2px solid var(--line); border-radius: 14px; cursor: pointer; min-height: 60px; }
+.groc label .nm { flex: 1 1 auto; font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.groc label .qt { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.groc label .st { display: block; font-weight: 400; font-size: 0.8em; color: var(--muted); }
+.groc input:checked ~ .nm { text-decoration: line-through; color: var(--muted); }
+.groc.have label { background: var(--good-bg); border-color: var(--good); }
+
+/* nutrition */
+.mem-nutr { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; }
+.bar-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 10px; align-items: center; }
+@media (max-width: 480px) { .bar-row { grid-template-columns: 1fr auto; } .bar-row .track { grid-column: 1 / -1; order: 3; } }
+.track { height: 18px; border-radius: 99px; background: var(--soft); border: 2px solid var(--ctl); overflow: hidden; position: relative; }
+.fill { display: block; height: 100%; background: var(--primary); }
+.fill.warn { background: var(--warn); }
+.macro { display: flex; height: 40px; border-radius: 12px; overflow: hidden; border: 2px solid var(--ctl); font-weight: 700; }
+.macro span { display: grid; place-items: center; color: var(--ink); min-width: 0; font-size: 0.85em; }
+.m-p { background: var(--m1); } .m-c { background: var(--m3); } .m-f { background: var(--m0); }
+.daybars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: end; height: 190px; padding-top: 8px; }
+.daybar { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 4px; font-size: 0.8em; font-weight: 700; }
+.daybar .col { width: 100%; max-width: 54px; background: var(--primary); border-radius: 10px 10px 4px 4px; min-height: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-weight: 700; font-size: 0.85em; }
+.legend i { display: inline-block; width: 16px; height: 16px; border-radius: 4px; border: 2px solid var(--ctl); vertical-align: -2px; margin-right: 6px; }
+.fine { font-size: 0.82em; color: var(--muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(18px, env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 12px 22px; border-radius: 99px; font-weight: 700; z-index: 20; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ===== dashboard ===== */
+.dash-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.dash-top h1 { font-size: clamp(26px, 5vw, 36px); }
+.eyebrow { font-weight: 800; letter-spacing: 0.08em; }
+.strip { display: flex; align-items: center; gap: 2px; }
+.pills { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; min-width: 0; }
+.dpill { min-height: 88px; border-radius: 99px; border: 2px solid transparent; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; font-weight: 700; padding: 6px 0; min-width: 0; }
+.dpill[aria-pressed="true"] { background: var(--soft); border-color: var(--ink); }
+.dw { font-size: 0.8em; color: var(--muted); }
+.dn { font-size: 1.25em; font-variant-numeric: tabular-nums; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: transparent; }
+.dot.on { background: var(--ink); }
+.icon-btn.flat { border-color: transparent; background: transparent; width: 40px; }
+.icon-btn:disabled { opacity: 0.3; cursor: default; }
+.switch { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid var(--ctl); border-radius: 99px; overflow: hidden; background: var(--surface); }
+.switch button { min-height: 54px; border: 0; background: transparent; font-weight: 800; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+.sec-head { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.08em; }
+.sec-ic { width: 42px; height: 42px; border-radius: 12px; background: var(--primary); color: var(--on-primary); display: grid; place-items: center; }
+.btn.wide { width: 100%; text-transform: uppercase; letter-spacing: 0.06em; }
+.mlist { display: flex; flex-direction: column; gap: 14px; }
+.mcard { background: var(--surface); border-radius: 20px; border: 2px solid var(--line); overflow: hidden; }
+.mrow { display: grid; grid-template-columns: clamp(104px, 28vw, 150px) 1fr; }
+.mthumb { border: 0; border-right: 6px solid var(--primary); cursor: pointer; display: grid; place-items: center; font-size: clamp(46px, 12vw, 64px); min-height: 150px; border-radius: 0; }
+div.mthumb { cursor: default; }
+.mbody { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.mtop { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
+.mname { background: none; border: 0; padding: 0; text-align: left; font: inherit; font-weight: 800; font-size: 1.1em; line-height: 1.25; cursor: pointer; color: var(--ink); min-width: 0; overflow-wrap: anywhere; }
+.mact { display: flex; gap: 6px; flex: none; }
+.mkind { color: var(--muted); font-weight: 600; }
+.mtags { display: flex; flex-wrap: wrap; gap: 6px; }
+.mmeta { margin-top: auto; font-weight: 800; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.icon-btn.done[aria-pressed="true"] { background: var(--good); border-color: var(--good); color: #fff; }
+.mcard .detail { border-top: 2px solid var(--line); padding-top: 16px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 10px 4px; text-align: center; font-weight: 800; font-size: 1.1em; font-variant-numeric: tabular-nums; }
+.stat small { display: block; font-weight: 600; color: var(--muted); font-size: 0.8em; }
+.bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 2px solid var(--line); z-index: 15; padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); }
+.bottom-nav .in { max-width: 980px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.bottom-nav button { border: 0; background: transparent; min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-weight: 700; font-size: 0.78em; cursor: pointer; color: var(--muted); border-top: 4px solid transparent; }
+.bottom-nav button[aria-current="page"] { color: var(--primary); border-top-color: var(--primary); }
+.wrap.results { padding-bottom: 96px; }
+.toast { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+.groc input[type=checkbox] { width: 34px; height: 34px; }
+.groc label .nm { display: flex; flex-direction: column; gap: 2px; }
+.groc label .st { display: block; font-weight: 500; font-size: 0.88em; color: var(--muted); }
+.groc label.cov { background: var(--good-bg); border-color: var(--good); cursor: default; }
+
+.mthumb { position: relative; overflow: hidden; }
+.mthumb .ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.ill { display: block; width: 100%; height: auto; }
+.mthumb .ill { width: 80%; max-width: 124px; }
+.meal-ic .ill { width: 52px; height: 52px; }
+.ico .ill { display: inline-block; width: 34px; height: 34px; vertical-align: middle; }
+
+/* week switcher */
+.weekbar { display: flex; align-items: center; justify-content: space-between; gap: 4px; background: var(--surface); border-radius: 18px; padding: 4px; }
+.wk-title { font-weight: 800; text-align: center; flex: 1; }
+.wk-chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 4px; }
+.wk-chips button { flex: none; min-height: 44px; padding: 0 16px; border-radius: 99px; border: 2px solid var(--ctl); background: var(--surface); font-weight: 700; cursor: pointer; }
+.wk-chips button[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+
+/* courses and alternatives on each meal */
+.cpanel { border-top: 2px solid var(--line); background: var(--soft); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+.cp-n { display: flex; flex-direction: column; gap: 6px; }
+.cp-course { display: flex; flex-direction: column; gap: 8px; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 12px; }
+.cp-lab { font-weight: 800; letter-spacing: 0.04em; }
+.cp-lab.alt { font-weight: 600; font-size: 0.9em; color: var(--muted); letter-spacing: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cp-alt { margin-top: 4px; padding: 10px 12px; border-left: 5px dashed var(--ctl); background: var(--soft); border-radius: 0 12px 12px 0; display: flex; flex-direction: column; gap: 8px; }
+.cp-altrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.cp-altrow select { flex: 1 1 200px; width: auto; font-style: italic; }
+.cp-altrow select:disabled { opacity: 0.5; }
+.cp-fixed { min-height: 54px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cp-warn { display: flex; gap: 8px; align-items: flex-start; color: var(--warn); font-weight: 700; font-size: 0.9em; }
+.cp-warn svg { width: 20px; height: 20px; margin-top: 2px; }
+.mmore { font-weight: 700; color: var(--primary); overflow-wrap: anywhere; }
+.cblock { display: flex; flex-direction: column; gap: 12px; padding-bottom: 14px; margin-bottom: 4px; border-bottom: 2px dashed var(--line); }
+.cb-h { font-size: 1.15em; }
+
+/* recipe library */
+.wrap.lib { padding-bottom: 40px; }
+.llist { display: flex; flex-direction: column; gap: 12px; }
+.lrow { display: grid; grid-template-columns: 84px 1fr; background: var(--surface); border: 2px solid var(--line); border-radius: 20px; overflow: hidden; }
+.lrow .mthumb { min-height: 0; font-size: 40px; border-right-width: 5px; }
+.lbody { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.lact { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ing-row { display: grid; grid-template-columns: 2fr 1fr 1.2fr 1.6fr auto; gap: 8px; align-items: center; list-style: none; }
+.nutr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.ta { min-height: 100px; padding: 12px 14px; border: 2px solid var(--ctl); border-radius: 14px; background: var(--surface); width: 100%; resize: vertical; }
+@media (max-width: 640px) {
+  .ing-row { grid-template-columns: 1fr 1fr; padding: 10px; border: 2px solid var(--line); border-radius: 16px; }
+  .ing-row > input[type=text] { grid-column: 1 / -1; }
+  .ing-row > select:nth-of-type(2) { grid-column: 1 / -1; }
+  .lrow { grid-template-columns: 64px 1fr; }
+  .lrow .mthumb { font-size: 30px; }
+}
+.cp-main { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.cp-main > select:first-child, .cp-main > .cp-fixed { flex: 1 1 220px; width: auto; }
+.cp-por { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.cp-por select { width: auto; min-width: 128px; }
+
+.cloud-live { border-color: var(--primary); }
+.cloud-offline { border-color: var(--muted, #888); opacity: .85; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>// Master DISH list (individual dishes, each appears once) and the starter meal ideas used by "Make our week".
+// Quantities and nutrition are per ADULT serving of the dish. Units: g, ml, pc. Category codes: P produce, M meat/fish, D dairy & eggs, G pantry & tins, B bakery, S staple (assumed at home, not listed).
+const RECIPES = [];
+const ALLERGENS = ['gluten','dairy','egg','peanut','treenut','soy','fish','shellfish','sesame','pork','beef','chicken','lamb','honey'];
+const DISH_CATS = [['bread','Bread and tiffin'],['grain','Rice and grains'],['curry','Dal and curry'],['veg','Vegetable and sabji'],['protein','Protein dishes'],['side','Side'],['light','Salad, soup and light dishes']];
+function addDish(id, cat, name, cuisine, flags, nutr, ingr, steps, note, art) {
+  const f = flags.split(' ').filter(Boolean);
+  const n = nutr.split(',').map(Number);
+  const tm = f.find(x => /^t\d+$/.test(x));
+  const grp = f.find(x => /^g:/.test(x));
+  RECIPES.push({
+    id, cat, name, icon: '\u{1F37D}\uFE0F', cuisine,
+    allergens: f.filter(x => ALLERGENS.includes(x)),
+    soft: f.includes('soft2') ? 2 : f.includes('soft1') ? 1 : 0,
+    spicy: f.includes('spicy'), keeps: f.includes('keeps'),
+    time: tm ? +tm.slice(1) : 20,
+    groups: grp ? grp.slice(2).split('') : [],
+    nutr: { kcal: n[0], protein: n[1], carbs: n[2], fat: n[3], fiber: n[4], sugar: n[5], sodium: n[6] },
+    ingr: ingr.split(';').map(s => { const [name, qty, unit, cat] = s.trim().split('|'); return { name, qty: +qty, unit, cat }; }),
+    steps, variation: note || '', photo: '', art: art || ''
+  });
+}
+// Starter meal ideas: dishes served together. Only the planner uses these (auto-planning and "other ideas"). They never appear in the dish dropdowns.
+// spec: "dishId:portion dishId ..." portion 1 = the standard serving.
+const COMBOS = [];
+function addCombo(id, meal, cuisine, spec) { COMBOS.push({ id, meal, cuisine, dishes: spec.split(' ').map(s => { const [d, p] = s.split(':'); return { id: d, p: p ? +p : 1 }; }) }); }
+
+addDish("chapati", "bread", "Chapati", "North Indian", "gluten soft1 keeps t20 g:c", "200,6,40,3,5,1,120",
+ "Wheat flour (atta)|60|g|G;Cooking oil|3|ml|S",
+ ["Knead the atta with water and a pinch of salt into a soft dough and rest it for 15 minutes.","Roll into thin rounds and cook on a hot tawa until brown spots appear and the chapati puffs."],
+ "Brush with a little ghee for extra softness.");
+addDish("idli", "bread", "Idli", "South Indian", "soft2 t25 g:c", "243,7,49,2,2,2,270",
+ "Idli batter|150|g|G",
+ ["Pour the batter into idli moulds.","Steam for 10 to 12 minutes until a skewer comes out clean."],
+ "Serve with sambar or coconut chutney.", "b1");
+addDish("dosa", "bread", "Dosa", "South Indian", "soft1 t20 g:c", "250,6,48,3,2,1,200",
+ "Dosa batter|150|g|G;Cooking oil|8|ml|S",
+ ["Spread the batter thinly on a hot, lightly oiled pan.","Cook until crisp and golden."],
+ "Make it thicker and softer for anyone who prefers an easier bite.", "b2");
+addDish("masala-dosa", "bread", "Masala dosa", "South Indian", "soft1 t30 g:cv", "420,10,72,10,5,3,340",
+ "Dosa batter|150|g|G;Potato|120|g|P;Onion|40|g|P;Cooking oil|8|ml|S;Turmeric|1|g|S",
+ ["Boil and crumble the potatoes, then fry with onion, turmeric and a pinch of salt.","Cook the dosa on a hot pan until crisp.","Fill with the potato masala and fold."],
+ "Add grated carrot to the filling for colour and fibre.", "b3");
+addDish("vegetable-uttapam", "bread", "Vegetable uttapam", "South Indian", "soft1 t25 g:cv", "340,10,62,5,5,4,320",
+ "Dosa batter|150|g|G;Onion|30|g|P;Tomato|40|g|P;Carrot|30|g|P;Cooking oil|6|ml|S",
+ ["Pour a thick round of batter on a hot oiled pan.","Scatter chopped onion, tomato and carrot on top and press in lightly.","Cook both sides until golden."],
+ "", "b7");
+addDish("appam", "bread", "Appam", "South Indian", "soft2 keeps t35 g:c", "210,4,40,4,1,2,40",
+ "Rice|50|g|G",
+ ["Grind soaked rice with coconut milk into a smooth batter and let it ferment overnight.","Swirl a ladle of batter in a small appam pan, cover and cook until the centre is soft and the edges crisp."],
+ "", "b8");
+addDish("aloo-paratha", "bread", "Aloo paratha", "North Indian", "gluten soft1 t35 g:cv", "355,8,63,9,6,0,310",
+ "Wheat flour (atta)|60|g|G;Potato|100|g|P;Cooking oil|8|ml|S",
+ ["Boil and mash the potatoes with salt and spices.","Stuff into rolled dough, seal and roll out gently.","Cook on a tawa with a little oil until golden on both sides."],
+ "", "b11");
+addDish("toast", "bread", "Toast", "Mediterranean", "gluten soft1 t5 g:c", "180,7,32,2,5,3,300",
+ "Wholemeal bread|2|pc|B",
+ ["Toast the bread until golden."],
+ "");
+addDish("moong-dal-cheela", "bread", "Moong dal cheela", "North Indian", "soft1 t25 g:pvc", "340,19,50,5,9,3,260",
+ "Moong dal|60|g|G;Onion|30|g|P;Spinach|30|g|P;Cooking oil|6|ml|S",
+ ["Soak the moong dal for 2 hours and grind into a thick batter.","Fold in chopped onion and spinach.","Spread on a hot pan like a thick pancake and cook both sides."],
+ "", "b12");
+addDish("rice", "grain", "Rice", "South Indian", "soft2 keeps t25 g:c", "270,6,58,1,1,0,10",
+ "Rice|70|g|G",
+ ["Rinse the rice and cook in plenty of water until soft.","Drain and keep covered until serving."],
+ "");
+addDish("curd-rice", "grain", "Curd rice", "South Indian", "dairy soft2 t20 g:cdp", "390,14,66,6,1,3,240",
+ "Rice|70|g|G;Curd|150|g|D;Mustard seeds|1|g|S;Cooking oil|5|ml|S",
+ ["Mash freshly cooked rice and mix with curd and a pinch of salt.","Temper mustard seeds in hot oil and stir in."],
+ "");
+addDish("lemon-rice", "grain", "Lemon rice", "South Indian", "soft2 t25 g:cp", "400,9,75,6,3,0,300",
+ "Rice|75|g|G;Lemon|20|g|P;Chana dal|10|g|G;Mustard seeds|1|g|S;Turmeric|1|g|S",
+ ["Cook the rice and spread it out to cool slightly.","Temper mustard seeds, chana dal and turmeric in hot oil.","Toss with the rice and lemon juice."],
+ "");
+addDish("rasam-rice", "grain", "Rasam rice", "South Indian", "soft2 t35 g:pc", "400,15,78,1,7,3,300",
+ "Rice|70|g|G;Toor dal|25|g|G;Tomato|100|g|P;Cumin|1|g|S;Black pepper|1|g|S",
+ ["Cook the dal and rice until soft.","Simmer chopped tomato with pepper and cumin to make a thin rasam.","Mix rasam into the rice and dal."],
+ "");
+addDish("vegetable-pulao", "grain", "Vegetable pulao", "South Indian", "dairy soft2 t35 g:vc", "490,10,84,13,6,2,360",
+ "Rice|80|g|G;Mixed vegetables|120|g|P;Ghee|8|g|D;Cumin|1|g|S",
+ ["Fry cumin and vegetables in ghee.","Add rice and water and cook covered until the rice is tender."],
+ "");
+addDish("tomato-rice", "grain", "Tomato rice", "South Indian", "soft2 t30 g:pvc", "470,11,86,7,6,4,360",
+ "Rice|80|g|G;Tomato|150|g|P;Frozen peas|40|g|P;Cooking oil|8|ml|S;Mustard seeds|1|g|S",
+ ["Temper mustard seeds, then cook tomato and peas into a soft masala.","Stir in cooked rice until evenly coloured."],
+ "");
+addDish("vegetable-upma", "grain", "Vegetable upma", "South Indian", "gluten soft2 t20 g:cv", "330,9,56,8,4,3,330",
+ "Semolina (rava)|60|g|G;Mixed vegetables|60|g|P;Onion|30|g|P;Mustard seeds|1|g|S;Cooking oil|8|ml|S",
+ ["Dry roast the semolina until lightly fragrant.","Temper mustard seeds, then cook onion and vegetables.","Add hot water and the semolina, stir until fluffy."],
+ "", "b4");
+addDish("vegetable-poha", "grain", "Vegetable poha", "North Indian", "soft2 t15 g:cv", "330,7,62,6,4,2,310",
+ "Poha (flattened rice)|60|g|G;Onion|30|g|P;Frozen peas|40|g|P;Carrot|30|g|P;Lemon|10|g|P;Cooking oil|8|ml|S",
+ ["Rinse the poha and let it soften.","Cook onion, peas and carrot with turmeric.","Fold in the poha and finish with lemon juice."],
+ "", "b10");
+addDish("ven-pongal", "grain", "Ven pongal", "South Indian", "dairy soft2 t30 g:pc", "380,12,60,10,4,1,260",
+ "Rice|50|g|G;Moong dal|25|g|G;Ghee|8|g|D;Black pepper|1|g|S;Cumin|1|g|S",
+ ["Cook rice and moong dal together until very soft.","Temper pepper and cumin in ghee and stir in."],
+ "", "b5");
+addDish("ragi-porridge", "grain", "Ragi porridge", "South Indian", "soft2 t12 g:c", "210,5,43,2,3,10,19",
+ "Ragi flour|40|g|G;Jaggery|10|g|G",
+ ["Whisk the ragi flour into cold water.","Cook while stirring until thick, then sweeten with jaggery."],
+ "Serve with a banana.", "b6");
+addDish("spinach-and-lentil-rice", "grain", "Spinach and lentil rice", "Mediterranean", "soft2 t35 g:pvc", "600,24,96,12,16,3,300",
+ "Rice|70|g|G;Spinach|150|g|P;Brown lentils|50|g|G;Lemon|15|g|P;Onion|40|g|P;Olive oil|10|ml|S",
+ ["Soften the onion in olive oil.","Add rice, lentils and water and cook until nearly tender.","Stir in the spinach and finish with lemon juice."],
+ "", "d22");
+addDish("sambar", "curry", "Sambar", "South Indian", "soft2 keeps t45 g:pv", "130,8,20,2,5,3,200",
+ "Toor dal|30|g|G;Mixed vegetables|70|g|P;Sambar powder|3|g|S",
+ ["Pressure-cook the dal with chopped vegetables and sambar powder until soft.","Simmer with tamarind water and temper with mustard seeds."],
+ "");
+addDish("dal-tadka", "curry", "Dal tadka", "North Indian", "dairy soft2 t40 g:p", "335,17,43,9,6,0,228",
+ "Toor dal|50|g|G;Ghee|5|g|D;Cumin|1|g|S",
+ ["Pressure-cook the toor dal until soft and mash lightly.","Heat ghee with cumin and pour the tadka over the dal."],
+ "");
+addDish("chana-masala", "curry", "Chana masala", "North Indian", "soft1 keeps t35 g:pv", "390,16,56,9,13,7,400",
+ "Canned chickpeas|130|g|G;Tomato|80|g|P;Onion|40|g|P;Cooking oil|8|ml|S",
+ ["Cook onion and tomato into a thick masala.","Add drained chickpeas and simmer until the gravy clings."],
+ "Mash a few chickpeas for a thicker gravy.");
+addDish("egg-curry", "curry", "Egg curry", "South Indian", "egg soft2 t35 g:pv", "310,16,18,17,4,6,450",
+ "Eggs|2|pc|D;Onion|60|g|P;Tomato|80|g|P;Cooking oil|8|ml|S;Turmeric|1|g|S",
+ ["Hard-boil the eggs and peel.","Cook onion and tomato with turmeric into a gravy.","Add the eggs and simmer for 5 minutes."],
+ "");
+addDish("lobia-curry", "curry", "Lobia curry", "South Indian", "soft2 keeps t40 g:pv", "253,17,33,4,12,4,245",
+ "Black-eyed peas|80|g|G;Tomato|60|g|P;Grated coconut|10|g|P;Mustard seeds|1|g|S",
+ ["Soak and pressure-cook the black-eyed peas.","Simmer with tomato and a mustard seed tempering."],
+ "");
+addDish("kerala-style-chicken-curry", "curry", "Kerala-style chicken curry", "South Indian", "chicken soft2 keeps t45 g:pv", "370,30,18,19,3,5,440",
+ "Chicken thigh|120|g|M;Onion|50|g|P;Tomato|60|g|P;Coconut milk|40|ml|G;Cooking oil|8|ml|S;Turmeric|1|g|S",
+ ["Brown the onion, then add tomato, turmeric and chicken.","Pour in coconut milk and simmer until the chicken is cooked through."],
+ "");
+addDish("chicken-curry", "curry", "Chicken curry", "North Indian", "chicken soft1 keeps t45 g:pv", "450,35,16,24,0,5,330",
+ "Chicken thigh|140|g|M;Onion|60|g|P;Tomato|80|g|P;Cooking oil|10|ml|S",
+ ["Brown the onion and cook down the tomatoes into a masala.","Add the chicken and simmer until tender."],
+ "");
+addDish("chettinad-style-chicken", "curry", "Chettinad-style chicken", "South Indian", "chicken spicy t45 g:pv", "420,34,14,23,3,5,510",
+ "Chicken thigh|140|g|M;Onion|60|g|P;Tomato|60|g|P;Cooking oil|10|ml|S;Black pepper|2|g|S",
+ ["Fry onion with crushed black pepper and spices.","Add tomato and chicken and cook until dry and fragrant."],
+ "");
+addDish("kerala-fish-curry", "curry", "Kerala fish curry", "South Indian", "fish soft2 t35 g:pv", "370,30,18,19,3,5,420",
+ "Fish fillet|140|g|M;Coconut milk|60|ml|G;Tomato|60|g|P;Onion|40|g|P;Turmeric|1|g|S;Cooking oil|8|ml|S",
+ ["Simmer onion, tomato and turmeric in coconut milk.","Add the fish pieces and cook gently for 8 minutes."],
+ "");
+addDish("kerala-chicken-stew", "curry", "Kerala chicken stew", "South Indian", "chicken soft2 keeps t50 g:pv", "438,31,30,21,5,5,400",
+ "Chicken thigh|130|g|M;Potato|100|g|P;Carrot|50|g|P;Coconut milk|80|ml|G;Onion|40|g|P",
+ ["Simmer chicken, potato, carrot and onion in a little water until tender.","Stir in coconut milk and warm through without boiling hard."],
+ "");
+addDish("vegetable-kurma", "curry", "Vegetable kurma", "South Indian", "treenut soft2 keeps t40 g:pv", "370,10,28,25,8,8,370",
+ "Mixed vegetables|150|g|P;Coconut milk|60|ml|G;Cashews|15|g|G;Frozen peas|40|g|P",
+ ["Cook the vegetables and peas until tender.","Blend cashews with coconut milk and stir in to make a creamy sauce."],
+ "");
+addDish("prawn-masala", "curry", "Prawn masala", "South Indian", "shellfish soft2 t30 g:pv", "310,28,14,15,3,5,630",
+ "Prawns|130|g|M;Onion|50|g|P;Tomato|70|g|P;Coconut milk|40|ml|G;Cooking oil|8|ml|S",
+ ["Cook onion and tomato into a masala.","Add the prawns and coconut milk and cook for 5 minutes."],
+ "");
+addDish("lamb-curry", "curry", "Lamb curry", "South Indian", "lamb soft2 keeps t80 g:pv", "450,30,18,27,4,6,510",
+ "Lamb shoulder|120|g|M;Onion|50|g|P;Tomato|60|g|P;Potato|80|g|P;Cooking oil|8|ml|S",
+ ["Brown the lamb with onion and spices.","Add tomato, potato and water and simmer slowly until the lamb is tender."],
+ "");
+addDish("rajma-masala", "curry", "Rajma masala", "North Indian", "soft1 keeps t50 g:pv", "420,22,60,7,17,6,360",
+ "Kidney beans|140|g|G;Tomato|100|g|P;Onion|40|g|P;Cooking oil|8|ml|S",
+ ["Pressure-cook soaked kidney beans until soft.","Simmer in an onion and tomato masala until thick."],
+ "");
+addDish("paneer-butter-masala", "curry", "Paneer butter masala", "North Indian", "dairy soft1 t35 g:pv", "470,21,20,34,0,8,410",
+ "Paneer|90|g|D;Tomato|150|g|P;Onion|40|g|P;Ghee|8|g|D",
+ ["Cook onion and tomato in ghee and blend into a smooth sauce.","Add paneer cubes and simmer gently."],
+ "");
+addDish("moong-dal", "curry", "Moong dal", "South Indian", "soft2 keeps t30 g:p", "150,10,25,1,5,1,15",
+ "Moong dal|40|g|G",
+ ["Rinse the dal and cook with turmeric until soft.","Temper with cumin and garlic."],
+ "");
+addDish("vegetable-stew", "curry", "Vegetable stew", "South Indian", "soft2 t35 g:v", "200,4,28,8,5,3,260",
+ "Mixed vegetables|100|g|P;Potato|60|g|P;Coconut milk|80|ml|G;Cooking oil|5|ml|S",
+ ["Simmer the vegetables and potato until tender.","Stir in coconut milk and warm through."],
+ "Serve with appam.", "b8");
+addDish("lemony-lentil-soup", "curry", "Lemony lentil soup", "Mediterranean", "soft2 keeps t40 g:pv", "365,21,53,6,15,8,355",
+ "Brown lentils|70|g|G;Carrot|60|g|P;Onion|40|g|P;Tomato|60|g|P;Lemon|15|g|P",
+ ["Simmer lentils with carrot, onion and tomato until soft.","Finish with lemon juice."],
+ "");
+addDish("carrot-and-chickpea-tagine", "curry", "Carrot and chickpea tagine", "Mediterranean", "soft2 keeps t45 g:pv", "370,14,40,15,15,16,390",
+ "Canned chickpeas|130|g|G;Carrot|120|g|P;Onion|40|g|P;Raisins|20|g|G;Canned tomatoes|100|g|G;Cumin|2|g|S",
+ ["Soften the onion with cumin and carrot.","Add tomatoes, chickpeas and raisins and simmer until thick."],
+ "", "d21");
+addDish("aloo-gobi", "veg", "Aloo gobi", "North Indian", "soft1 t40 g:pv", "290,9,42,8,6,4,270",
+ "Potato|120|g|P;Cauliflower|120|g|P;Onion|30|g|P;Cooking oil|8|ml|S;Turmeric|1|g|S",
+ ["Fry onion and turmeric, then add potato and cauliflower pieces.","Cover and cook on low heat until tender."],
+ "");
+addDish("palak-paneer", "veg", "Palak paneer", "North Indian", "dairy soft1 t40 g:pv", "400,20,26,23,5,4,360",
+ "Spinach|150|g|P;Paneer|70|g|D;Onion|30|g|P;Cooking oil|8|ml|S",
+ ["Blanch the spinach and blend with onion into a smooth puree.","Simmer the puree and stir in paneer cubes."],
+ "");
+addDish("bhindi-sabji", "veg", "Bhindi sabji", "North Indian", "soft1 t35 g:pv", "255,7,29,10,7,2,190",
+ "Okra|150|g|P;Onion|40|g|P;Cooking oil|10|ml|S",
+ ["Wash and dry the okra completely, then slice.","Fry with onion on medium heat until the sliminess is gone."],
+ "");
+addDish("matar-paneer", "veg", "Matar paneer", "North Indian", "dairy soft1 t40 g:pv", "480,22,30,29,5,7,400",
+ "Paneer|80|g|D;Frozen peas|80|g|P;Tomato|80|g|P;Onion|40|g|P;Cooking oil|8|ml|S",
+ ["Cook onion and tomato into a masala.","Add peas and paneer and simmer for 8 minutes."],
+ "");
+addDish("mixed-vegetable-sabji", "veg", "Mixed vegetable sabji", "North Indian", "soft1 t40 g:v", "250,8,31,6,5,4,245",
+ "Mixed vegetables|150|g|P;Onion|30|g|P;Cooking oil|8|ml|S",
+ ["Fry the onion, then add chopped vegetables and spices.","Cover and cook until tender."],
+ "");
+addDish("avial", "veg", "Avial", "South Indian", "dairy soft2 t40 g:v", "215,5,12,17,7,8,283",
+ "Mixed vegetables|180|g|P;Grated coconut|40|g|P;Curd|60|g|D",
+ ["Steam the vegetables until just tender.","Grind coconut and curd with green chilli and stir in."],
+ "");
+addDish("baingan-bharta", "veg", "Baingan bharta", "North Indian", "soft1 t45 g:pv", "245,6,31,7,8,4,200",
+ "Eggplant|200|g|P;Tomato|60|g|P;Onion|40|g|P;Cooking oil|8|ml|S",
+ ["Roast the eggplant until the skin chars, then peel and mash.","Cook with onion and tomato."],
+ "");
+addDish("lauki-chana-dal-sabji", "veg", "Lauki chana dal sabji", "North Indian", "soft1 t45 g:pv", "340,17,48,5,10,6,200",
+ "Bottle gourd|200|g|P;Chana dal|40|g|G;Tomato|60|g|P;Cooking oil|8|ml|S",
+ ["Soak the chana dal and cook until nearly soft.","Add bottle gourd and tomato and cook until tender."],
+ "");
+addDish("stuffed-peppers", "veg", "Stuffed peppers with rice and beans", "Mediterranean", "soft2 t55 g:pvc", "600,22,98,14,14,14,420",
+ "Bell pepper|150|g|P;Canned black beans|100|g|G;Rice|60|g|G;Tomato|100|g|P;Onion|30|g|P",
+ ["Mix cooked rice, black beans, onion and tomato for the filling.","Fill the hollowed peppers and bake covered until soft."],
+ "", "d24");
+addDish("sauteed-zucchini", "veg", "Sautéed zucchini", "Mediterranean", "soft2 t10 g:v", "50,2,6,2,2,4,10",
+ "Zucchini|120|g|P;Olive oil|5|ml|S",
+ ["Slice the zucchini and sauté in olive oil until just golden."],
+ "");
+addDish("broccoli", "veg", "Broccoli", "Mediterranean", "soft2 keeps t10 g:v", "40,4,6,1,4,2,40",
+ "Broccoli|120|g|P",
+ ["Steam the broccoli florets for 5 minutes until bright green and tender."],
+ "");
+addDish("roast-potatoes", "veg", "Roast potatoes", "Mediterranean", "soft2 keeps t40 g:c", "190,4,40,3,5,2,20",
+ "Potato|200|g|P;Olive oil|5|ml|S",
+ ["Cut the potatoes into chunks and toss with olive oil.","Roast at 200 C for 35 minutes until golden."],
+ "");
+addDish("egg-bhurji", "protein", "Egg bhurji", "North Indian", "egg soft1 t15 g:pv", "230,15,6,15,1,2,240",
+ "Eggs|2|pc|D;Onion|40|g|P;Tomato|50|g|P;Cooking oil|8|ml|S;Turmeric|1|g|S",
+ ["Cook onion and tomato with turmeric until soft.","Add beaten eggs and scramble until just set."],
+ "", "b9");
+addDish("kerala-egg-roast", "protein", "Kerala egg roast", "South Indian", "egg soft1 t35 g:pv", "440,24,30,23,1,5,360",
+ "Eggs|3|pc|D;Onion|60|g|P;Tomato|80|g|P;Cooking oil|10|ml|S",
+ ["Hard-boil and peel the eggs.","Cook onion and tomato into a thick, dark masala and coat the eggs."],
+ "", "d9");
+addDish("tomato-and-feta-omelette", "protein", "Tomato and feta omelette", "Mediterranean", "egg dairy soft1 t15 g:pv", "310,21,6,23,2,3,370",
+ "Eggs|2|pc|D;Tomato|60|g|P;Feta|20|g|D;Olive oil|5|ml|S",
+ ["Beat the eggs and pour into a hot oiled pan.","Add tomato and feta, fold and cook until set."],
+ "", "b14");
+addDish("chicken-souvlaki", "protein", "Chicken souvlaki", "Mediterranean", "chicken soft1 t30 g:p", "245,27,1,15,1,0,378",
+ "Chicken breast|110|g|M;Lemon|10|g|P;Olive oil|8|ml|S",
+ ["Marinate chicken cubes in lemon, olive oil and oregano.","Grill or pan-fry on skewers until cooked through."],
+ "", "l17");
+addDish("baked-cod-with-tomatoes-and-olives", "protein", "Baked cod with tomatoes and olives", "Mediterranean", "fish soft1 t40 g:pv", "370,36,15,15,1,4,620",
+ "Cod fillet|150|g|M;Cherry tomatoes|100|g|P;Olives|20|g|G;Green beans|80|g|P;Olive oil|8|ml|S",
+ ["Place cod, tomatoes, olives and green beans in a tray with olive oil.","Bake at 200 C for 20 minutes."],
+ "", "d18");
+addDish("lemon-baked-salmon", "protein", "Lemon baked salmon", "Mediterranean", "fish soft1 t30 g:p", "320,30,0,23,2,0,340",
+ "Salmon fillet|130|g|M;Lemon|15|g|P;Olive oil|8|ml|S",
+ ["Place the salmon on a tray with lemon slices and olive oil.","Bake at 200 C for 12 to 15 minutes."],
+ "", "d19");
+addDish("lemon-roast-chicken", "protein", "Lemon roast chicken", "Mediterranean", "chicken soft1 keeps t55 g:p", "470,38,6,28,0,0,360",
+ "Chicken thigh|150|g|M;Lemon|20|g|P;Garlic|5|g|P;Olive oil|10|ml|S",
+ ["Rub the chicken with lemon, garlic and olive oil.","Roast at 200 C for 40 minutes until golden and cooked through."],
+ "", "d20");
+addDish("shakshuka", "protein", "Shakshuka", "Mediterranean", "egg soft1 t30 g:pv", "400,21,24,22,4,9,340",
+ "Eggs|3|pc|D;Canned tomatoes|200|g|G;Bell pepper|60|g|P;Onion|40|g|P;Olive oil|8|ml|S",
+ ["Simmer onion, pepper and tomatoes into a thick sauce.","Make wells, crack in the eggs and cover until set."],
+ "", "d23");
+addDish("curd", "side", "Curd", "North Indian", "dairy soft2 t2 g:d", "65,4,5,3,0,5,50",
+ "Curd|100|g|D",
+ ["Serve chilled, plain or with a pinch of salt."],
+ "");
+addDish("raita", "side", "Raita", "South Indian", "dairy soft2 t5 g:vd", "70,4,6,3,0,5,60",
+ "Curd|100|g|D;Cumin|1|g|S",
+ ["Whisk the curd until smooth.","Season with salt and roasted cumin."],
+ "");
+addDish("cucumber-raita", "side", "Cucumber raita", "South Indian", "dairy soft2 t10 g:vd", "70,4,7,3,1,6,60",
+ "Curd|100|g|D;Cucumber|50|g|P",
+ ["Whisk the curd until smooth.","Stir in grated cucumber, salt and roasted cumin."],
+ "");
+addDish("cucumber-salad", "side", "Cucumber salad", "North Indian", "soft1 t10 g:v", "25,1,5,0,2,4,12",
+ "Cucumber|60|g|P;Tomato|60|g|P",
+ ["Slice the cucumber and tomato.","Season with salt and lemon juice."],
+ "");
+addDish("coconut-chutney", "side", "Coconut chutney", "South Indian", "soft2 t10 g:p", "110,3,10,7,2,1,100",
+ "Grated coconut|30|g|P;Roasted gram|10|g|G",
+ ["Grind coconut and roasted gram with a little water into a smooth chutney.","Temper with mustard seeds if you like."],
+ "");
+addDish("cabbage-poriyal", "side", "Cabbage poriyal", "South Indian", "soft2 keeps t20 g:v", "90,2,9,5,3,4,60",
+ "Cabbage|80|g|P;Grated coconut|15|g|P;Mustard seeds|1|g|S;Cooking oil|3|ml|S",
+ ["Temper mustard seeds in oil.","Add finely shredded cabbage and cook until just tender, then stir in coconut."],
+ "");
+addDish("carrot-poriyal", "side", "Carrot poriyal", "South Indian", "soft2 t20 g:v", "90,2,12,4,3,6,60",
+ "Carrot|80|g|P;Mustard seeds|1|g|S;Cooking oil|5|ml|S",
+ ["Temper mustard seeds in oil.","Add grated carrot and cook until soft."],
+ "");
+addDish("beans-poriyal", "side", "Beans poriyal", "South Indian", "soft2 t20 g:v", "100,3,10,6,4,3,80",
+ "Green beans|100|g|P;Grated coconut|15|g|P",
+ ["Chop the beans finely and steam until tender.","Toss with coconut and a mustard seed tempering."],
+ "");
+addDish("banana", "side", "Banana", "South Indian", "soft2 t1 g:f", "90,1,23,0,3,12,1",
+ "Banana|1|pc|P",
+ ["Peel and serve."],
+ "");
+addDish("greek-yogurt", "side", "Greek yogurt", "Mediterranean", "dairy soft2 t2 g:d", "100,9,4,5,0,4,40",
+ "Greek yogurt|100|g|D",
+ ["Serve chilled."],
+ "");
+addDish("greek-yogurt-with-berries-and-walnuts", "light", "Greek yogurt with berries and walnuts", "Mediterranean", "dairy treenut honey soft1 t5 g:pfd", "360,20,26,18,4,17,70",
+ "Greek yogurt|170|g|D;Mixed berries|80|g|P;Walnuts|15|g|G;Honey|10|g|G",
+ ["Spoon the yogurt into a bowl.","Top with berries, chopped walnuts and a drizzle of honey."],
+ "Swap the honey for banana slices to make it honey-free.", "b13");
+addDish("hummus-and-cucumber-toast", "light", "Hummus and cucumber toast", "Mediterranean", "gluten sesame soft1 t10 g:cvp", "340,12,46,12,9,5,480",
+ "Wholemeal bread|2|pc|B;Hummus|50|g|G;Cucumber|60|g|P;Tomato|60|g|P",
+ ["Toast the bread.","Spread with hummus and top with cucumber and tomato slices."],
+ "", "b15");
+addDish("hummus-and-veggie-wrap", "light", "Hummus and veggie wrap", "Mediterranean", "gluten sesame soft1 t10 g:vcp", "520,17,68,20,13,6,620",
+ "Tortilla wrap|1|pc|B;Hummus|60|g|G;Cucumber|60|g|P;Carrot|50|g|P;Lettuce|30|g|P;Bell pepper|40|g|P",
+ ["Spread hummus over the wrap.","Add the sliced vegetables, roll tightly and cut in half."],
+ "", "l15");
+addDish("chickpea-and-quinoa-salad", "light", "Chickpea and quinoa salad", "Mediterranean", "soft1 t20 g:vpc", "540,19,70,20,15,9,300",
+ "Quinoa|50|g|G;Canned chickpeas|120|g|G;Cucumber|80|g|P;Tomato|80|g|P;Red onion|20|g|P;Lemon|20|g|P;Olive oil|10|ml|S",
+ ["Cook the quinoa and let it cool.","Toss with chickpeas, chopped vegetables, lemon juice and olive oil."],
+ "", "l14");
+addDish("tuna-and-white-bean-salad", "light", "Tuna and white bean salad", "Mediterranean", "fish soft1 t15 g:pvc", "450,36,48,12,12,5,500",
+ "Canned tuna|80|g|M;Canned white beans|100|g|G;Cucumber|60|g|P;Tomato|80|g|P;Red onion|20|g|P;Lemon|15|g|P;Olive oil|8|ml|S",
+ ["Drain the tuna and beans.","Toss with chopped vegetables, lemon juice and olive oil."],
+ "", "l18");
+
+addCombo("b1", "b", "South Indian", "idli sambar:0.75");
+addCombo("b2", "b", "South Indian", "dosa coconut-chutney");
+addCombo("b3", "b", "South Indian", "masala-dosa");
+addCombo("b4", "b", "South Indian", "vegetable-upma");
+addCombo("b5", "b", "South Indian", "ven-pongal");
+addCombo("b6", "b", "South Indian", "ragi-porridge banana");
+addCombo("b7", "b", "South Indian", "vegetable-uttapam");
+addCombo("b8", "b", "South Indian", "appam vegetable-stew");
+addCombo("b9", "b", "North Indian", "egg-bhurji chapati:0.75");
+addCombo("b10", "b", "North Indian", "vegetable-poha");
+addCombo("b11", "b", "North Indian", "aloo-paratha curd");
+addCombo("b12", "b", "North Indian", "moong-dal-cheela");
+addCombo("b13", "b", "Mediterranean", "greek-yogurt-with-berries-and-walnuts");
+addCombo("b14", "b", "Mediterranean", "tomato-and-feta-omelette toast:0.5");
+addCombo("b15", "b", "Mediterranean", "hummus-and-cucumber-toast");
+addCombo("l1", "l", "South Indian", "rice sambar:1.25 cabbage-poriyal");
+addCombo("l2", "l", "South Indian", "lemon-rice cucumber-raita");
+addCombo("l3", "l", "South Indian", "curd-rice carrot-poriyal");
+addCombo("l4", "l", "South Indian", "rasam-rice beans-poriyal");
+addCombo("l5", "l", "South Indian", "vegetable-pulao raita");
+addCombo("l6", "l", "South Indian", "egg-curry rice");
+addCombo("l7", "l", "South Indian", "lobia-curry rice cabbage-poriyal:0.75");
+addCombo("l8", "l", "South Indian", "kerala-style-chicken-curry rice");
+addCombo("l9", "l", "North Indian", "chapati:1.25 aloo-gobi");
+addCombo("l10", "l", "North Indian", "chapati dal-tadka cucumber-salad");
+addCombo("l11", "l", "North Indian", "chapati palak-paneer");
+addCombo("l12", "l", "North Indian", "chapati bhindi-sabji curd");
+addCombo("l13", "l", "North Indian", "chapati chana-masala");
+addCombo("l14", "l", "Mediterranean", "chickpea-and-quinoa-salad");
+addCombo("l15", "l", "Mediterranean", "hummus-and-veggie-wrap");
+addCombo("l16", "l", "Mediterranean", "lemony-lentil-soup rice:0.5");
+addCombo("l17", "l", "Mediterranean", "chicken-souvlaki rice cucumber-salad greek-yogurt:0.5");
+addCombo("l18", "l", "Mediterranean", "tuna-and-white-bean-salad");
+addCombo("d1", "d", "South Indian", "dosa:1.25 sambar:1.25 coconut-chutney");
+addCombo("d2", "d", "South Indian", "kerala-fish-curry rice");
+addCombo("d3", "d", "South Indian", "kerala-chicken-stew appam:1.25");
+addCombo("d4", "d", "South Indian", "chettinad-style-chicken rice");
+addCombo("d5", "d", "South Indian", "vegetable-kurma rice");
+addCombo("d6", "d", "South Indian", "avial rice moong-dal:0.5");
+addCombo("d7", "d", "South Indian", "prawn-masala rice");
+addCombo("d8", "d", "South Indian", "lamb-curry rice");
+addCombo("d9", "d", "South Indian", "kerala-egg-roast chapati");
+addCombo("d10", "d", "South Indian", "tomato-rice raita");
+addCombo("d11", "d", "North Indian", "chapati:1.25 paneer-butter-masala");
+addCombo("d12", "d", "North Indian", "chapati mixed-vegetable-sabji moong-dal");
+addCombo("d13", "d", "North Indian", "chapati:1.25 chicken-curry");
+addCombo("d14", "d", "North Indian", "chapati rajma-masala");
+addCombo("d15", "d", "North Indian", "chapati:1.25 baingan-bharta curd");
+addCombo("d16", "d", "North Indian", "chapati matar-paneer");
+addCombo("d17", "d", "North Indian", "chapati lauki-chana-dal-sabji");
+addCombo("d18", "d", "Mediterranean", "baked-cod-with-tomatoes-and-olives roast-potatoes");
+addCombo("d19", "d", "Mediterranean", "lemon-baked-salmon rice sauteed-zucchini");
+addCombo("d20", "d", "Mediterranean", "lemon-roast-chicken roast-potatoes broccoli");
+addCombo("d21", "d", "Mediterranean", "carrot-and-chickpea-tagine rice");
+addCombo("d22", "d", "Mediterranean", "spinach-and-lentil-rice");
+addCombo("d23", "d", "Mediterranean", "shakshuka toast");
+addCombo("d24", "d", "Mediterranean", "stuffed-peppers");
+// Planning engine: restrictions, scoring, plan generation, grocery list, nutrition.
+const MEALS = ['b', 'l', 'd'];
+const MEAL_NAME = { b: 'Breakfast', l: 'Lunch', d: 'Dinner' };
+// Menu emphasis: mostly South Indian, some chapati and sabji, a little Mediterranean.
+const CUISINE_BONUS = { 'South Indian': 1.1, 'North Indian': 0.2, 'Mediterranean': 0 };
+const MEAT = ['pork', 'beef', 'chicken', 'lamb'];
+const SEAFOOD = ['fish', 'shellfish'];
+
+const ALLERGY_OPTS = [
+  ['gluten', 'Gluten / wheat'], ['dairy', 'Milk / dairy'], ['egg', 'Eggs'], ['peanut', 'Peanuts'],
+  ['treenut', 'Tree nuts'], ['soy', 'Soy'], ['fish', 'Fish'], ['shellfish', 'Shellfish'], ['sesame', 'Sesame']
+];
+const DIET_OPTS = [
+  ['vegetarian', 'Vegetarian'], ['vegan', 'Vegan'], ['halal', 'Halal'], ['kosher', 'Kosher'],
+  ['nopork', 'No pork'], ['nobeef', 'No beef']
+];
+const HEALTH_OPTS = [
+  ['lowsalt', 'Low salt'], ['lowsugar', 'Low sugar'], ['soft', 'Soft foods'], ['mild', 'No spicy food']
+];
+
+function ageInfo(age) {
+  age = Number(age);
+  if (age < 4) return { label: 'Toddler', factor: 0.5, kcal: 1200, protein: 20, fiber: 15, sodium: 1000 };
+  if (age < 12) return { label: 'Child', factor: 0.75, kcal: 1600, protein: 30, fiber: 20, sodium: 1500 };
+  if (age < 18) return { label: 'Teen', factor: 1.2, kcal: 2400, protein: 55, fiber: 28, sodium: 2300 };
+  if (age < 65) return { label: 'Adult', factor: 1, kcal: 2200, protein: 55, fiber: 28, sodium: 2300 };
+  return { label: 'Senior', factor: 0.85, kcal: 1800, protein: 60, fiber: 25, sodium: 1500 };
+}
+
+function norm(s) {
+  return String(s).toLowerCase().trim().replace(/oes\b/g, 'o').replace(/ies\b/g, 'y').replace(/(\w{3,})s\b/g, '$1');
+}
+function terms(str) {
+  return String(str || '').split(/[,;\n]/).map(norm).filter(Boolean);
+}
+const SYN = [['eggplant', 'brinjal aubergine baingan'], ['okra', 'bhindi ladies finger'], ['bottle gourd', 'lauki'], ['curd', 'yogurt yoghurt dahi'],
+  ['potato', 'aloo'], ['cauliflower', 'gobi'], ['spinach', 'palak'], ['chickpea', 'chana'], ['kidney bean', 'rajma'], ['prawn', 'shrimp'],
+  ['lamb', 'mutton'], ['wheat flour', 'chapati roti atta'], ['black-eyed pea', 'lobia'], ['toor dal', 'sambar'], ['dosa batter', 'dosa'], ['idli batter', 'idli'],
+  ['paneer', 'cottage cheese'], ['coconut', 'chutney'], ['bell pepper', 'capsicum'], ['zucchini', 'courgette']];
+function recipeText(r) {
+  const base = norm([r.name, r.cuisine, r.allergens.join(' '), r.ingr.map(i => i.name).join(' ')].join(' | '));
+  return base + ' | ' + SYN.filter(([k]) => base.includes(k)).map(x => x[1]).join(' ');
+}
+function mainProtein(r) {
+  for (const a of ['chicken', 'beef', 'pork', 'lamb', 'fish', 'shellfish']) if (r.allergens.includes(a)) return a;
+  const t = r.ingr.map(i => i.name.toLowerCase()).join(' ');
+  if (/paneer/.test(t)) return 'paneer';
+  if (/tofu/.test(t)) return 'tofu';
+  if (/lentil|\bdal\b|chickpea|chana|bean|rajma|lobia|black-eyed|moong/.test(t)) return 'legumes';
+  if (r.allergens.includes('egg') && r.ingr.some(i => /egg/i.test(i.name) && i.qty >= 1)) return 'egg';
+  if (r.allergens.includes('dairy')) return 'dairy';
+  return 'veg';
+}
+
+// Returns a list of reasons this recipe is unsuitable for one member (empty = suitable).
+function conflicts(r, m) {
+  const out = [];
+  const A = r.allergens, ar = m.allergies || [], di = m.diets || [], he = m.health || [];
+  const age = Number(m.age);
+  ar.forEach(a => { if (A.includes(a)) out.push(`contains ${a === 'treenut' ? 'tree nuts' : a}`); });
+  const isMeat = A.some(a => MEAT.includes(a)), isSea = A.some(a => SEAFOOD.includes(a));
+  if (di.includes('vegan') && (isMeat || isSea || A.includes('dairy') || A.includes('egg') || A.includes('honey'))) out.push('not vegan');
+  else if (di.includes('vegetarian') && (isMeat || isSea)) out.push('not vegetarian');
+  if ((di.includes('halal') || di.includes('nopork')) && A.includes('pork')) out.push('contains pork');
+  if (di.includes('kosher') && (A.includes('pork') || A.includes('shellfish') || (isMeat && A.includes('dairy')))) out.push('not kosher');
+  if (di.includes('nobeef') && A.includes('beef')) out.push('contains beef');
+  const saltCap = r.meal === 'b' ? 450 : 600, sugarCap = r.meal === 'b' ? 12 : 10;
+  if (he.includes('lowsalt') && r.nutr.sodium > saltCap) out.push('too salty');
+  if (he.includes('lowsugar') && r.nutr.sugar > sugarCap) out.push('too sweet');
+  if ((he.includes('soft') || age < 4) && r.soft === 0) out.push('not soft enough');
+  if ((he.includes('mild') || age < 12) && r.spicy) out.push('too spicy');
+  const rt = recipeText(r);
+  terms(m.dislikes).forEach(t => { if (rt.includes(t)) out.push(`includes ${t}`); });
+  return out;
+}
+
+function validFor(r, members) {
+  const reasons = [];
+  members.forEach(m => conflicts(r, m).forEach(c => reasons.push(`${m.name || 'Member'}: ${c}`)));
+  return { ok: reasons.length === 0, reasons };
+}
+
+function likesScore(r, members) {
+  const rt = recipeText(r);
+  let s = 0;
+  members.forEach(m => terms(m.likes).forEach(t => { if (rt.includes(t)) s += 1; }));
+  return s;
+}
+
+function householdFactor(members) {
+  return members.reduce((a, m) => a + ageInfo(m.age).factor, 0);
+}
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function stockMatches(stockName, ingName) {
+  const clean = x => norm(String(x).replace(/^\s*(atta|chapati flour)\s*$/i, 'wheat flour').replace(/\(.*?\)/g, ''));
+  const s = clean(stockName), i = clean(ingName);
+  if (!s || !i) return false;
+  if (s === i) return true;
+  const st = s.split(/\s+/), it = i.split(/\s+/);
+  if (!st.every(w => it.includes(w))) return false;
+  const head = a => a[a.length - 1];
+  return head(st) === head(it) || (st.length === 1 && ['chicken', 'fish', 'lamb', 'prawn', 'egg', 'paneer', 'dal'].includes(s));
+}
+
+// ---- Plan generation ----
+// plan.slots has 21 entries, index = day*3 + meal index (b,l,d).
+// slot kinds: recipe, leftover (from a batch-cooked dinner), fridge (cooked food already at home), skip, none
+function generatePlan(state, seed) {
+  const rnd = mulberry32(seed || 1);
+  const members = state.members;
+  const f = householdFactor(members);
+  const slots = Array(21).fill(null);
+  const warnings = [];
+  const idx = (d, m) => d * 3 + MEALS.indexOf(m);
+
+  const pool = { b: [], l: [], d: [] };
+  const eliminated = { b: {}, l: {}, d: {} };
+  const IDEAS = engineRecipes();
+  IDEAS.forEach(r => {
+    const v = validFor(r, members);
+    if (v.ok) pool[r.meal].push(r);
+    else v.reasons.forEach(x => { const who = x.split(':')[0]; eliminated[r.meal][who] = (eliminated[r.meal][who] || 0) + 1; });
+  });
+  const poolInfo = {};
+  MEALS.forEach(m => { poolInfo[m] = { valid: pool[m].length, total: IDEAS.filter(r => r.meal === m).length }; });
+
+  const rem = (state.stock || []).map(s => ({ ...s, left: Number(s.qty) || 0 }));
+  const used = new Set();
+  const chosen = []; // {slot, r}
+
+  function stockBonus(r, mult) {
+    const ing = r.ingr.filter(i => i.cat !== 'S');
+    let sum = 0;
+    ing.forEach(i => {
+      const need = i.qty * f * mult;
+      rem.forEach(s => {
+        if (s.unit === i.unit && s.left > 0 && stockMatches(s.name, i.name)) sum += (Math.min(s.left, need) / need) * (s.soon ? 2 : 1);
+      });
+    });
+    return ing.length ? (4 * sum) / ing.length : 0;
+  }
+  function consumeStock(r, mult) {
+    r.ingr.filter(i => i.cat !== 'S').forEach(i => {
+      let need = i.qty * f * mult;
+      rem.forEach(s => {
+        if (s.unit === i.unit && s.left > 0 && need > 0 && stockMatches(s.name, i.name)) {
+          const u = Math.min(s.left, need); s.left -= u; need -= u;
+        }
+      });
+    });
+  }
+  function score(r, day, meal, noise) {
+    let sc = noise ? rnd() * 1.5 : 0;
+    sc += likesScore(r, members) * 2 + stockBonus(r, 1);
+    const mp = mainProtein(r);
+    let sameWeek = 0, sameCuisine = 0;
+    chosen.forEach(c => {
+      if (c.r.meal === meal) {
+        if (mainProtein(c.r) === mp && mp !== 'veg') sameWeek++;
+        if (c.r.cuisine === r.cuisine) sameCuisine++;
+        if (Math.abs(c.day - day) === 1 && mainProtein(c.r) === mp && mp !== 'veg') sc -= 3;
+        if (Math.abs(c.day - day) === 1 && c.r.cuisine === r.cuisine) sc -= 0.7;
+      } else if (c.day === day && mainProtein(c.r) === mp && mp !== 'veg') sc -= 2;
+    });
+    return sc + (CUISINE_BONUS[r.cuisine] || 0) - sameWeek * 1.2 - sameCuisine * 0.15;
+  }
+  function pick(day, meal, candidatesOverride) {
+    let cands = (candidatesOverride || pool[meal]).filter(r => !used.has(r.id));
+    let repeated = false;
+    if (!cands.length) {
+      cands = candidatesOverride || pool[meal];
+      repeated = cands.length > 0;
+    }
+    if (!cands.length) return null;
+    let best = null, bs = -1e9;
+    cands.forEach(r => { const s = score(r, day, meal, true); if (s > bs) { bs = s; best = r; } });
+    return { r: best, repeated };
+  }
+  function assign(day, meal, r, extra) {
+    slots[idx(day, meal)] = { kind: 'recipe', recipeId: r.id, ...extra };
+    used.add(r.id); chosen.push({ day, meal, r });
+    consumeStock(r, (extra && extra.cookDouble) ? 2 : 1);
+  }
+
+  // 1. skipped meals (eating out)
+  (state.skips || []).forEach(k => { const [d, m] = k.split('-'); slots[idx(+d, m)] = { kind: 'skip' }; });
+
+  // 2. special requests
+  (state.requests || []).forEach(q => {
+    const i = idx(q.day, q.meal);
+    if (!q.text || (slots[i] && slots[i].kind === 'skip')) return;
+    const ts = terms(q.text);
+    const match = rr => ts.some(t => recipeText(rr).includes(t));
+    const okc = pool[q.meal].filter(match);
+    if (okc.length) {
+      const p = pick(q.day, q.meal, okc);
+      assign(q.day, q.meal, p.r, { request: q.text });
+    } else {
+      const any = IDEAS.filter(r => r.meal === q.meal && match(r));
+      if (any.length) {
+        const why = [...new Set(validFor(any[0], members).reasons)].slice(0, 2).join('; ');
+        warnings.push(`Could not add "${q.text}" for ${MEAL_NAME[q.meal].toLowerCase()} on day ${q.day + 1}. The matching recipe breaks a restriction (${why}).`);
+      } else warnings.push(`No ${MEAL_NAME[q.meal].toLowerCase()} recipe matches "${q.text}" yet.`);
+    }
+  });
+
+  // 3. cooked food already in the fridge
+  (state.fridge || []).forEach(item => {
+    for (let k = 0; k < (Number(item.meals) || 1); k++) {
+      let target = null;
+      for (const m of ['l', 'd']) {
+        for (let d = 0; d < 7 && !target; d++) if (!slots[idx(d, m)]) target = idx(d, m);
+        if (target !== null) break;
+      }
+      if (target !== null) slots[target] = { kind: 'fridge', name: item.name };
+    }
+  });
+
+  // 4. dinners, 5. batch-cook leftovers, 6. lunches, 7. breakfasts
+  const fill = meal => {
+    for (let d = 0; d < 7; d++) {
+      if (slots[idx(d, meal)]) continue;
+      const p = pick(d, meal);
+      if (!p) { slots[idx(d, meal)] = { kind: 'none' }; continue; }
+      assign(d, meal, p.r, p.repeated ? { repeated: true } : {});
+    }
+  };
+  fill('d');
+  if (state.batch !== false) {
+    let count = 0, last = -9;
+    for (let d = 0; d < 6 && count < 2; d++) {
+      const ds = slots[idx(d, 'd')], ls = slots[idx(d + 1, 'l')];
+      if (ds && ds.kind === 'recipe' && !ds.repeated && !ds.request && !ls && d - last >= 2) {
+        const r = IDEAS.find(x => x.id === ds.recipeId);
+        if (r && r.keeps) {
+          ds.cookDouble = true; consumeStock(r, 1);
+          slots[idx(d + 1, 'l')] = { kind: 'leftover', recipeId: r.id, fromDay: d };
+          count++; last = d;
+        }
+      }
+    }
+  }
+  fill('l');
+  fill('b');
+
+  MEALS.forEach(m => {
+    const p = poolInfo[m];
+    if (p.valid === 0) warnings.push(`No ${MEAL_NAME[m].toLowerCase()} recipes fit everyone's restrictions together.`);
+    else if (slots.some((s, i) => MEALS[i % 3] === m && s && s.repeated)) warnings.push(`Only ${p.valid} ${MEAL_NAME[m].toLowerCase()} ${p.valid === 1 ? 'recipe fits' : 'recipes fit'} everyone, so some repeat this week.`);
+  });
+  // each meal idea becomes its courses (one dish per course), so the plan is built from individual dishes
+  slots.forEach((sl, k) => { if (sl && (sl.kind === 'recipe' || sl.kind === 'leftover')) slots[k] = expandSlot(sl); });
+  return { slots, warnings, poolInfo, eliminated, seed, v: 2 };
+}
+
+// ---- Alternatives for one slot ----
+function alternatives(plan, state, slotIndex, limit) {
+  const meal = MEALS[slotIndex % 3];
+  const inPlan = new Set(plan.slots.filter(s => s && s.comboId).map(s => s.comboId));
+  const list = engineRecipes().filter(r => r.meal === meal && !inPlan.has(r.id) && validFor(r, state.members).ok);
+  const stockScore = r => {
+    const f = householdFactor(state.members);
+    let s = 0;
+    r.ingr.forEach(i => (state.stock || []).forEach(st => { if (st.unit === i.unit && stockMatches(st.name, i.name)) s += st.soon ? 2 : 1; }));
+    return s + likesScore(r, state.members) * 2;
+  };
+  return list.sort((a, b) => stockScore(b) - stockScore(a)).slice(0, limit || 4);
+}
+
+// Put a new slot into the plan; a batch-cooked dinner that is replaced no longer feeds the next lunch.
+function replaceSlot(plan, slotIndex, fresh) {
+  const slots = plan.slots.map(s => (s ? { ...s } : s));
+  const old = slots[slotIndex];
+  slots[slotIndex] = fresh;
+  if (old && old.cookDouble) {
+    const nx = slots[slotIndex + 1];
+    if (nx && nx.kind === 'leftover') slots[slotIndex + 1] = { kind: 'none' };
+  }
+  if (old && old.kind === 'leftover') { /* replaced by a fresh dish; the dinner stays doubled but unused */
+    const src = slots[old.fromDay * 3 + 2];
+    if (src) delete src.cookDouble;
+  }
+  return { ...plan, slots };
+}
+// Change the dish of course 1 (extra courses and the course 1 alternative stay with the meal).
+function swap(plan, slotIndex, recipeId) {
+  const old = plan.slots[slotIndex];
+  const fresh = { kind: 'recipe', recipeId, swapped: true };
+  if (old && old.extra) fresh.extra = old.extra;
+  if (old && old.alt && old.alt !== recipeId) fresh.alt = old.alt;
+  return replaceSlot(plan, slotIndex, fresh);
+}
+// Replace the whole meal with one of the suggested meal ideas (all its dishes become courses).
+function swapMeal(plan, slotIndex, comboId) {
+  return replaceSlot(plan, slotIndex, expandSlot({ kind: 'recipe', recipeId: comboId, swapped: true }));
+}
+
+// ---- Summary: grocery, stock, nutrition, variety, leftovers ----
+function fmtQty(q, unit) {
+  if (unit === 'g') return q >= 1000 ? `${(q / 1000).toFixed(q % 1000 === 0 ? 0 : 1)} kg` : `${q} g`;
+  if (unit === 'ml') return q >= 1000 ? `${(q / 1000).toFixed(q % 1000 === 0 ? 0 : 1)} L` : `${q} ml`;
+  return `${q}`;
+}
+function roundUp(q, unit) { return unit === 'pc' ? Math.ceil(q - 1e-9) : Math.ceil(q / 10 - 1e-9) * 10; }
+
+const CAT_NAME = { P: 'Fruit and vegetables', M: 'Meat, fish and tofu', D: 'Dairy and eggs', G: 'Tins, grains and pantry', B: 'Bakery' };
+
+function summarize(plan, state) {
+  const members = state.members;
+  const f = householdFactor(members);
+  const needs = {};
+  const perDay = Array.from({ length: 7 }, () => ({ kcal: 0, protein: 0, carbs: 0, fat: 0, n: 0 }));
+  const memberTot = members.map(() => ({ kcal: 0, protein: 0, fiber: 0, sodium: 0, sugar: 0, meals: 0 }));
+  const proteins = {}; const recipesUsed = new Set();
+  let vegMeals = 0, fishMeals = 0, planned = 0;
+  const plannedLeft = [], fridgeMeals = [];
+
+  const NK = ['kcal', 'protein', 'carbs', 'fat', 'fiber', 'sugar', 'sodium'];
+  plan.slots.forEach((s, i) => {
+    const day = Math.floor(i / 3);
+    if (!s || s.kind === 'skip') return;
+    const nutr = { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0 };
+    let any = false;
+    const addN = n => { NK.forEach(k => { nutr[k] += n[k] || 0; }); any = true; };
+    if (s.kind === 'fridge') { addN({ kcal: 550, protein: 25, carbs: 70, fat: 18, fiber: 6, sodium: 600, sugar: 6 }); fridgeMeals.push({ day, name: s.name }); }
+    // Only the PRIMARY dishes count (course 1 plus any extra courses). Alternatives are ignored until made primary.
+    slotDishes(s).forEach(d => {
+      const r = d.r;
+      addN(scaleN(r.nutr, d.portion));
+      if (d.kind === 'leftover') { plannedLeft.push({ day, fromDay: s.fromDay, recipe: r }); return; }
+      const mult = d.mult;
+      r.ingr.forEach(g => {
+        if (g.cat === 'S') return;
+        const k = g.name + '|' + g.unit;
+        if (!needs[k]) needs[k] = { name: g.name, unit: g.unit, cat: g.cat, need: 0 };
+        needs[k].need += g.qty * f * mult * (state.scale || 1);
+      });
+      recipesUsed.add(r.id);
+      if (['bread', 'grain', 'side'].includes(r.cat)) return;   // breads, rice and sides are not the main protein
+      const mp = mainProtein(r); proteins[mp] = (proteins[mp] || 0) + 1;
+      if (['veg', 'legumes', 'tofu', 'dairy', 'egg'].includes(mp)) vegMeals++;
+      if (r.allergens.includes('fish')) fishMeals++;
+    });
+    if (!any) return;
+    planned++;
+    perDay[day].kcal += nutr.kcal; perDay[day].protein += nutr.protein; perDay[day].carbs += nutr.carbs; perDay[day].fat += nutr.fat; perDay[day].n++;
+    members.forEach((m, k) => {
+      const fa = ageInfo(m.age).factor, t = memberTot[k];
+      t.kcal += nutr.kcal * fa; t.protein += nutr.protein * fa; t.fiber += nutr.fiber * fa; t.sodium += nutr.sodium * fa; t.sugar += nutr.sugar * fa; t.meals++;
+    });
+  });
+
+  // grocery = needs minus stock
+  const stockLeft = (state.stock || []).map(s => ({ ...s, left: Number(s.qty) || 0, used: 0 }));
+  const items = Object.values(needs).map(n => {
+    let need = n.need, fromStock = 0;
+    stockLeft.forEach(s => {
+      if (s.unit === n.unit && s.left > 0 && need > 0 && stockMatches(s.name, n.name)) {
+        const u = Math.min(s.left, need); s.left -= u; s.used += u; need -= u; fromStock += u;
+      }
+    });
+    return { ...n, fromStock, buy: need > 0.0001 ? roundUp(need, n.unit) : 0, total: roundUp(n.need, n.unit) };
+  });
+  const groups = {};
+  items.forEach(it => { (groups[it.cat] = groups[it.cat] || []).push(it); });
+  const grocery = Object.keys(CAT_NAME).filter(c => groups[c]).map(c => ({
+    cat: CAT_NAME[c], items: groups[c].sort((a, b) => a.name.localeCompare(b.name))
+  }));
+  const toBuy = items.filter(i => i.buy > 0).length;
+  const covered = items.filter(i => i.buy === 0).length;
+
+  const nutrition = memberTot.map((t, k) => {
+    const a = ageInfo(members[k].age);
+    const perDayAvg = x => Math.round(x / (planned / 3));
+    const kcal = perDayAvg(t.kcal), protein = perDayAvg(t.protein), fiber = perDayAvg(t.fiber), sodium = perDayAvg(t.sodium);
+    return {
+      name: members[k].name, label: a.label, kcal, protein, fiber, sodium, sugar: perDayAvg(t.sugar),
+      target: a, pctKcal: Math.round((kcal / a.kcal) * 100),
+      proteinOk: protein >= a.protein * 0.9, fiberOk: fiber >= a.fiber * 0.75, sodiumOk: sodium <= a.sodium
+    };
+  });
+  const house = perDay.map(d => ({ kcal: Math.round(d.kcal * 3 / Math.max(1, d.n)), protein: Math.round(d.protein * 3 / Math.max(1, d.n)), carbs: Math.round(d.carbs * 3 / Math.max(1, d.n)), fat: Math.round(d.fat * 3 / Math.max(1, d.n)), n: d.n }));
+  const tot = house.reduce((a, d) => ({ p: a.p + d.protein * 4, c: a.c + d.carbs * 4, f: a.f + d.fat * 9 }), { p: 0, c: 0, f: 0 });
+  const sumE = tot.p + tot.c + tot.f || 1;
+  const macro = { protein: Math.round(tot.p / sumE * 100), carbs: Math.round(tot.c / sumE * 100), fat: Math.round(tot.f / sumE * 100) };
+
+  const unusedStock = stockLeft.filter(s => s.left > 0.0001).map(s => ({ name: s.name, qty: Math.round(s.left), unit: s.unit, soon: !!s.soon, wasUsed: s.used > 0 }));
+  const usedStock = stockLeft.filter(s => s.used > 0.0001).map(s => ({ name: s.name, qty: Math.round(s.used), unit: s.unit }));
+  const inPlan = new Set(plan.slots.filter(s => s && s.comboId).map(s => s.comboId));
+  const ideas = unusedStock.filter(s => !s.wasUsed).slice(0, 6).map(s => {
+    const rs = engineRecipes().filter(r => !inPlan.has(r.id) && r.ingr.some(i => stockMatches(s.name, i.name)) && validFor(r, members).ok).slice(0, 2);
+    return { stock: s, recipes: rs };
+  }).filter(x => x.recipes.length);
+
+  return {
+    grocery, toBuy, covered, nutrition, house, macro, usedStock, unusedStock, ideas,
+    variety: { meals: planned, distinct: recipesUsed.size, proteins, vegMeals, fishMeals },
+    leftovers: { planned: plannedLeft, fridge: fridgeMeals }
+  };
+}
+
+if (typeof module !== 'undefined') module.exports = { generatePlan, summarize, validFor, alternatives, swap, swapMeal, ageInfo, householdFactor, mainProtein, conflicts, stockMatches, norm };
+// ===== Dish library =====
+// RECIPES is the one master DISH list: every individual dish appears once (Chapati, Dal tadka, Rice ...).
+// Plans, dropdowns, shopping lists and nutrition all read it. The user edits it in the Dishes screen; it is saved in the browser.
+// COMBOS (from dishes.js) are only suggested pairings used by "Make our week" and "other ideas". They are built from the dishes and never shown as dropdown items.
+const RECIPE_KEY = 'familyTable.dishes.v1';
+const STARTER_RECIPES = JSON.parse(JSON.stringify(RECIPES));
+const NUTR_FIELDS = [['kcal', 'Calories', 'kcal'], ['protein', 'Protein', 'g'], ['carbs', 'Carbohydrate', 'g'], ['fat', 'Fat', 'g'], ['fiber', 'Fibre', 'g'], ['sugar', 'Sugar', 'g'], ['sodium', 'Sodium', 'mg']];
+const CAT_LBL = Object.fromEntries(DISH_CATS);
+let libVer = 0;
+
+function cleanRecipe(r) {
+  const num = (v, d) => { v = Number(v); return isFinite(v) && v >= 0 ? v : (d || 0); };
+  const n = r.nutr || {};
+  const nutr = {}; NUTR_FIELDS.forEach(([k]) => { nutr[k] = Math.round(num(n[k]) * 10) / 10; });
+  return {
+    id: String(r.id), icon: r.icon || '\u{1F37D}️', name: String(r.name || 'Untitled dish').trim(),
+    cat: CAT_LBL[r.cat] ? r.cat : 'veg',
+    cuisine: String(r.cuisine || '').trim(),
+    allergens: (Array.isArray(r.allergens) ? r.allergens : []).filter(a => ALLERGENS.includes(a)),
+    soft: [0, 1, 2].includes(Number(r.soft)) ? Number(r.soft) : 0,
+    spicy: !!r.spicy, keeps: !!r.keeps,
+    time: Math.round(num(r.time, 20)) || 20,
+    groups: (Array.isArray(r.groups) ? r.groups : []).filter(g => g && 'vpcfd'.includes(g)),
+    nutr,
+    ingr: (Array.isArray(r.ingr) ? r.ingr : []).map(i => ({
+      name: String(i.name || '').trim(), qty: num(i.qty),
+      unit: ['g', 'ml', 'pc'].includes(i.unit) ? i.unit : 'g',
+      cat: i.cat && 'PMDGBS'.includes(i.cat) ? i.cat : 'G'
+    })).filter(i => i.name),
+    steps: (Array.isArray(r.steps) ? r.steps : []).map(x => String(x).trim()).filter(Boolean),
+    variation: String(r.variation || '').trim(),
+    photo: String(r.photo || '').trim(),
+    art: r.art ? String(r.art) : ''
+  };
+}
+function loadRecipes() {
+  try {
+    const raw = localStorage.getItem(RECIPE_KEY); if (!raw) return;
+    const d = JSON.parse(raw); if (!Array.isArray(d)) return;
+    const list = d.filter(x => x && x.id && x.name).map(cleanRecipe);
+    RECIPES.length = 0; list.forEach(r => RECIPES.push(r));
+    libVer++;
+  } catch (e) { /* keep the starter dishes */ }
+}
+function saveRecipes() { libVer++; try { localStorage.setItem(RECIPE_KEY, JSON.stringify(RECIPES)); } catch (e) { /* storage may be unavailable */ } if (typeof cloudQueue === 'function') cloudQueue(); }
+const recipeById = id => (id ? RECIPES.find(r => r.id === id) : undefined);
+const newRecipeId = () => 'u' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+const scaleN = (n, p) => { const o = {}; Object.keys(n).forEach(k => { o[k] = n[k] * (p == null ? 1 : p); }); return o; };
+
+// ---- Meal ideas for the planner, built from the current dishes (so edits to a dish flow into planning) ----
+let _eng = null, _engVer = -1;
+function comboRecipe(c) {
+  const parts = c.dishes.map(x => ({ r: recipeById(x.id), p: x.p })).filter(x => x.r);
+  if (!parts.length) return null;
+  const nutr = {}; NUTR_FIELDS.forEach(([k]) => { nutr[k] = Math.round(parts.reduce((a, x) => a + x.r.nutr[k] * x.p, 0)); });
+  const ingr = []; parts.forEach(x => x.r.ingr.forEach(i => ingr.push({ ...i, qty: Math.round(i.qty * x.p * 10) / 10 })));
+  return {
+    id: c.id, comboId: c.id, name: parts.map(x => x.r.name).join(' + '), icon: parts[0].r.icon, lead: parts[0].r.id, meal: c.meal, cuisine: c.cuisine,
+    allergens: [...new Set(parts.flatMap(x => x.r.allergens))], soft: Math.min(...parts.map(x => x.r.soft)), spicy: parts.some(x => x.r.spicy), keeps: parts.every(x => x.r.keeps),
+    time: Math.max(...parts.map(x => x.r.time)), groups: [...new Set(parts.flatMap(x => x.r.groups))], nutr, ingr, steps: [], variation: ''
+  };
+}
+function engineRecipes() {
+  if (_eng && _engVer === libVer) return _eng;
+  _eng = COMBOS.map(comboRecipe).filter(Boolean); _engVer = libVer;
+  return _eng;
+}
+// A meal idea becomes courses: course 1 plus extra courses, one individual dish each.
+function expandSlot(s) {
+  const c = COMBOS.find(x => x.id === s.recipeId);
+  if (!c || recipeById(s.recipeId)) return s;
+  const parts = c.dishes.filter(x => recipeById(x.id)); if (!parts.length) return s;
+  const left = s.kind === 'leftover';
+  const o = { ...s, comboId: c.id, recipeId: parts[0].id, portion: parts[0].p };
+  const ex = parts.slice(1).map(x => ({ recipeId: x.id, alt: '', portion: x.p, gen: true, left }));
+  if (ex.length) o.extra = ex;
+  return o;
+}
+
+// The PRIMARY dishes of one meal slot, in course order. Alternatives are never included.
+// portion = how many standard servings of the dish; mult = portion, doubled when the meal is cooked as a double batch.
+function slotDishes(s) {
+  const out = [];
+  if (!s || s.kind === 'skip') return out;
+  const add = (r, course, kind, portion, dbl) => { const p = portion > 0 ? portion : 1; out.push({ r, course, kind, portion: p, dbl, mult: p * (dbl ? 2 : 1) }); };
+  if (s.kind === 'recipe' || s.kind === 'leftover') { const r = recipeById(s.recipeId); if (r) add(r, 1, s.kind, s.portion, !!s.cookDouble); }
+  (s.extra || []).forEach((e, k) => { const r = e && recipeById(e.recipeId); if (r) add(r, k + 2, e.left ? 'leftover' : 'recipe', e.portion, !!(s.cookDouble && e.gen)); });
+  return out;
+}
+const dishesNutr = dishes => { const n = { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0 }; dishes.forEach(d => Object.keys(n).forEach(k => { n[k] += d.r.nutr[k] * d.portion; })); return n; };
+const portionText = p => (p === 1 ? '1×' : `${p}×`);
+
+// After the library changes: meals that used a deleted dish ask for a new one; missing alternatives are cleared.
+// Plans saved before the dish list existed are converted from combined meals to courses.
+function repairPlan(plan) {
+  if (!plan || !Array.isArray(plan.slots)) return plan;
+  if (plan.v !== 2) { plan.slots = plan.slots.map(s => (s && (s.kind === 'recipe' || s.kind === 'leftover') ? expandSlot(s) : s)); plan.v = 2; }
+  plan.slots = plan.slots.map(s => {
+    if (!s) return s;
+    const o = { ...s };
+    if ((s.kind === 'recipe' || s.kind === 'leftover') && !recipeById(s.recipeId)) { o.kind = 'none'; o.removed = true; delete o.recipeId; delete o.cookDouble; delete o.portion; delete o.comboId; }
+    if (o.alt && !recipeById(o.alt)) delete o.alt;
+    if (o.extra) { o.extra = o.extra.map(e => ({ ...e, recipeId: recipeById(e && e.recipeId) ? e.recipeId : '', alt: recipeById(e && e.alt) ? e.alt : '' })); if (!o.extra.length) delete o.extra; }
+    return o;
+  });
+  return plan;
+}
+function repairPlans() {
+  if (ui.plan) repairPlan(ui.plan);
+  Object.values(weeks).forEach(w => { if (w && w.plan !== ui.plan) repairPlan(w.plan); });
+}
+
+loadRecipes();
+// ===== Illustrations: original flat, ink-outlined food drawings, one per dish (top-down, 120 x 120) =====
+const INK = '#2B2118';
+const st = (w = 2.5) => `stroke="${INK}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+const C = (x, y, r, f, w) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" ${st(w)}/>`;
+const E = (x, y, rx, ry, f, rot = 0, w) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" transform="rotate(${rot} ${x} ${y})" ${st(w)}/>`;
+const P = (d, f, w) => `<path d="${d}" fill="${f}" ${st(w)}/>`;
+const L = (d, w = 1.8) => `<path d="${d}" fill="none" ${st(w)}/>`;
+const D = a => a.map(([x, y, r, f]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}"/>`).join('');
+function sc(cx, cy, R, n, seed, r, f) {
+  const g = mulberry32(seed), o = [];
+  for (let i = 0; i < n; i++) { const a = g() * 6.283, d = Math.sqrt(g()) * R; o.push([+(cx + Math.cos(a) * d).toFixed(1), +(cy + Math.sin(a) * d).toFixed(1), r, f]); }
+  return D(o);
+}
+const plate = () => C(60, 60, 54, '#FFFFFF', 3) + `<circle cx="60" cy="60" r="43" fill="none" stroke="#E6DFD2" stroke-width="2"/>`;
+const bowlBase = (rim, inner) => C(60, 60, 54, rim, 3) + C(60, 60, 44, inner, 2.5);
+const bf = (inner, extra) => bowlBase('#F3E3CF', inner) + (extra || '');
+const smallBowl = (x, y, r, inner, extra) => C(x, y, r, '#F3E3CF', 2.2) + C(x, y, r - 4, inner, 1.8) + (extra || '');
+const GREEN = '#5C8A3A', ORANGE = '#E58A2B', RED = '#D6452F', CREAM = '#F6EFD9';
+
+// ---- dish types ----
+function idli() {
+  return plate()
+    + E(42, 50, 16, 13, '#FFFCF2') + L('M32 50 Q42 41 52 50')
+    + E(70, 46, 16, 13, '#FFFCF2') + L('M60 46 Q70 37 80 46')
+    + E(55, 72, 16, 13, '#FFFCF2') + L('M45 72 Q55 63 65 72')
+    + smallBowl(90, 82, 13, '#D9822B', D([[87, 80, 2, '#8A4A1A'], [93, 84, 2, '#E6A92E'], [86, 85, 1.7, GREEN]]));
+}
+function dosa(o = {}) {
+  let s = plate() + E(60, 52, 46, 16, '#EDBE63', -16) + L('M22 64 Q60 44 100 34', 1.6) + sc(60, 52, 30, 9, 5, 2.2, '#C98A2B');
+  if (o.potato) s += E(94, 38, 11, 8, '#F2D36B', -16) + D([[91, 36, 2, '#E58A2B'], [97, 40, 1.8, GREEN]]);
+  if (o.sides) s += smallBowl(34, 90, 12, CREAM, D([[31, 88, 2, '#8DB255'], [37, 92, 2, '#8DB255']])) + smallBowl(84, 92, 12, '#D9822B', D([[82, 90, 2, '#8A4A1A'], [87, 94, 2, '#E6A92E']]));
+  else s += smallBowl(88, 92, 12, CREAM, D([[85, 90, 2, '#8DB255'], [91, 94, 2, '#8DB255']]));
+  return s;
+}
+function riceCurry(curry, o = {}) {
+  let s = plate() + C(40, 56, 23, '#FFFDF5') + sc(40, 56, 17, 9, 2, 1.1, '#DDD3BC');
+  s += smallBowl(84, 60, 19, curry);
+  if (o.chunks) s += sc(84, 60, 9, 5, 7, 3.2, o.chunks);
+  if (o.veg) s += sc(84, 60, 9, 4, 8, 2.6, GREEN) + sc(84, 60, 9, 3, 9, 2.6, ORANGE);
+  if (o.eggs) s += E(80, 58, 6, 4.5, '#FFFFFF', 0, 1.6) + D([[80, 58, 2.4, '#F2B531']]) + E(90, 64, 6, 4.5, '#FFFFFF', 0, 1.6) + D([[90, 64, 2.4, '#F2B531']]);
+  if (o.strips) s += sc(84, 60, 9, 5, 4, 2, GREEN) + sc(84, 60, 9, 3, 5, 2, ORANGE);
+  if (o.chickpea) s += sc(84, 60, 9, 5, 6, 2.6, '#E3BF7A') + sc(84, 60, 9, 3, 10, 2.4, ORANGE);
+  if (o.chili) s += E(34, 78, 6, 2.2, '#C8281E', 20, 1.4) + E(48, 80, 6, 2.2, '#C8281E', -15, 1.4);
+  s += sc(60, 96, 15, 6, 11, 3.4, o.side || '#5C8A3A');
+  return s;
+}
+function riceMound(color, o = {}) {
+  let s = plate() + C(60, 55, 28, color) + sc(60, 55, 22, 10, 3, 1.1, 'rgba(43,33,24,0.25)');
+  if (o.dots) s += o.dots;
+  if (o.raita) s += smallBowl(92, 92, 12, '#FFFFFF', D([[89, 90, 2, GREEN], [95, 94, 2, GREEN]]));
+  if (o.lemon) s += P('M20 92 Q34 80 48 92 Z', '#F4D548', 1.8);
+  return s;
+}
+function chapatiSabji(color, o = {}) {
+  let s = plate() + C(34, 66, 19, '#E2BE7D') + C(40, 60, 20, '#EBCB8E') + C(46, 54, 20, '#F0D39B') + sc(46, 54, 14, 6, 12, 2, '#B9833F');
+  s += smallBowl(84, 72, 19, color);
+  const c = (n, seed, r, f) => sc(84, 72, 9, n, seed, r, f);
+  if (o.cubes) s += c(4, 3, 3.4, '#FFF3D6');
+  if (o.peas) s += c(4, 4, 2.4, GREEN);
+  if (o.chunks) s += c(5, 5, 3.2, o.chunks);
+  if (o.beans) s += c(6, 6, 2.6, '#6B1E16');
+  if (o.chana) s += c(6, 7, 2.6, '#E3BF7A');
+  if (o.cauli) s += c(4, 8, 3.2, '#FFFBEF') + c(3, 9, 3, '#E2B65A');
+  if (o.mixed) s += c(3, 10, 2.8, ORANGE) + c(3, 11, 2.8, GREEN) + c(3, 12, 2.8, '#F2D36B');
+  if (o.slices) s += c(5, 13, 2.8, '#A6C768');
+  if (o.dal) s += c(4, 14, 1.6, '#8A5A1A');
+  if (o.eggs) s += E(80, 70, 6, 4.5, '#FFFFFF', 0, 1.6) + D([[80, 70, 2.4, '#F2B531']]) + E(90, 76, 6, 4.5, '#FFFFFF', 0, 1.6) + D([[90, 76, 2.4, '#F2B531']]);
+  if (o.curd) s += smallBowl(86, 28, 11, '#FFFFFF');
+  return s;
+}
+function pancake(base, tops, side) {
+  let s = plate() + C(58, 54, 34, base) + `<circle cx="58" cy="54" r="29" fill="none" stroke="rgba(43,33,24,0.25)" stroke-width="2"/>` + (tops || '');
+  if (side === 'curd') s += smallBowl(88, 90, 12, '#FFFFFF');
+  if (side === 'stew') s += smallBowl(88, 90, 12, '#F3EBCF', D([[85, 88, 2, ORANGE], [91, 92, 2, GREEN]]));
+  return s;
+}
+function appam() {
+  return plate() + C(58, 54, 34, '#FFFBF0') + `<circle cx="58" cy="54" r="31" fill="none" stroke="#EBC879" stroke-width="4"/>` + C(58, 54, 13, '#FFFFFF', 2) + smallBowl(88, 90, 12, '#F3EBCF', D([[85, 88, 2, ORANGE], [91, 92, 2, GREEN]]));
+}
+function bhurji() {
+  return plate() + E(44, 52, 24, 18, '#F6D24A') + sc(44, 52, 16, 8, 3, 2.4, '#E9B92A') + sc(44, 52, 16, 4, 4, 2.2, RED) + C(80, 72, 20, '#EBCB8E') + sc(80, 72, 13, 6, 14, 2, '#B9833F');
+}
+function omelette() {
+  return plate() + P('M18 70 Q60 8 102 70 Z', '#F4C443') + L('M30 62 Q60 24 90 62') + sc(60, 56, 18, 5, 2, 3, RED) + sc(60, 56, 18, 4, 3, 2.6, '#FFFFFF') + sc(60, 92, 12, 5, 8, 3, GREEN);
+}
+function toast(topFill, tops) {
+  return plate() + `<rect x="30" y="30" width="60" height="60" rx="12" fill="#D9A25B" ${st()} transform="rotate(-6 60 60)"/><rect x="36" y="36" width="48" height="48" rx="8" fill="${topFill}" ${st(1.6)} transform="rotate(-6 60 60)"/>` + (tops || '');
+}
+function wrap() {
+  return plate() + `<rect x="14" y="46" width="92" height="28" rx="14" fill="#EBCB8E" ${st()} transform="rotate(-25 60 60)"/>` + L('M30 74 Q56 60 84 46', 1.6) + C(101, 41, 9, '#F6F1E2', 2) + D([[98, 39, 2.2, GREEN], [104, 43, 2.2, ORANGE], [100, 45, 2, RED]]);
+}
+function yogurt() {
+  return bowlBase('#FFFFFF', '#FFF8EC') + sc(60, 60, 28, 9, 2, 5, '#7A3E8E') + sc(60, 60, 28, 5, 3, 4.5, '#C8283E') + E(44, 70, 6, 4, '#B07A45', 20, 1.6) + E(74, 48, 6, 4, '#B07A45', -20, 1.6) + L('M36 56 Q48 46 60 56 T84 56', 2.4).replace('stroke="#2B2118"', 'stroke="#E0A92E"');
+}
+function soupBowl(color, dots) {
+  return bf(color, `<circle cx="60" cy="60" r="36" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/>` + (dots || ''));
+}
+function saladBowl(o = {}) {
+  let s = bf('#EFE8D2') + E(44, 54, 14, 7, '#7FB04A', -30) + E(72, 50, 14, 7, '#6AA03F', 30) + E(58, 72, 14, 7, '#8CBB55', 0);
+  if (o.tomato) s += C(48, 66, 6, RED, 1.8) + C(74, 70, 6, RED, 1.8);
+  if (o.cuc) s += C(66, 56, 6, '#C8E3A0', 1.8) + C(46, 46, 6, '#C8E3A0', 1.8);
+  if (o.chick) s += sc(60, 60, 24, 10, 3, 2.8, '#E3BF7A');
+  if (o.beans) s += sc(60, 60, 24, 10, 4, 2.8, '#FFFFFF');
+  if (o.tuna) s += sc(60, 60, 20, 6, 5, 4, '#E9A38C');
+  return s;
+}
+function buddha() {
+  const sector = (d, f) => `<path d="${d}" fill="${f}" ${st(2)}/>`;
+  return bowlBase('#F3E3CF', '#FFFFFF')
+    + sector('M60 60 L60 16 A44 44 0 0 1 104 60 Z', '#FFFDF5') + sector('M60 60 L104 60 A44 44 0 0 1 60 104 Z', '#C9793A')
+    + sector('M60 60 L60 104 A44 44 0 0 1 16 60 Z', '#B6DA8A') + sector('M60 60 L16 60 A44 44 0 0 1 60 16 Z', '#E5614A')
+    + sc(82, 38, 10, 8, 3, 1.1, '#DDD3BC') + sc(38, 82, 10, 5, 4, 3, '#E8F5CF') + sc(38, 38, 10, 4, 5, 3.4, '#F6A08F') + sc(82, 82, 10, 4, 6, 3, '#E8A860');
+}
+function fishPlate(color, sides) {
+  let s = plate() + P('M22 54 Q38 34 74 38 Q94 42 92 56 Q88 74 52 72 Q26 70 22 54 Z', color) + L('M40 44 L46 64') + L('M54 42 L60 66') + L('M68 44 L72 64') + P('M82 90 Q96 78 108 90 Z', '#F4D548', 1.8);
+  (sides || []).forEach(([f, n, seed]) => { s += sc(48, 92, 22, n, seed, 4, f); });
+  return s;
+}
+function chickenPlate() {
+  return plate() + E(52, 50, 24, 14, '#C9793A', -28) + E(78, 33, 5, 4, '#FFFBEF', 0, 2) + E(86, 29, 4.5, 4, '#FFFBEF', 0, 2)
+    + E(34, 88, 10, 7, '#E0B45A', 20) + E(50, 96, 10, 7, '#E0B45A', -10) + E(24, 76, 8, 6, '#E0B45A', 0)
+    + C(82, 90, 9, '#4F8A33', 1.8) + C(94, 80, 8, '#5C9A3A', 1.8) + C(74, 80, 7, '#4F8A33', 1.8);
+}
+function prawns() {
+  const prawn = (tx, ty) => `<g transform="translate(${tx} ${ty})"><path d="M20 40 C12 20 46 14 50 34 C52 46 40 50 36 44" fill="none" stroke="${INK}" stroke-width="12" stroke-linecap="round"/><path d="M20 40 C12 20 46 14 50 34 C52 46 40 50 36 44" fill="none" stroke="#F08A4B" stroke-width="8" stroke-linecap="round"/></g>`;
+  return plate() + prawn(8, 4) + prawn(34, 22) + C(36, 88, 15, '#FFFDF5') + sc(36, 88, 10, 6, 3, 1, '#DDD3BC') + P('M72 92 Q86 80 100 92 Z', '#F4D548', 1.8);
+}
+function shakshuka() {
+  const egg = (x, y) => C(x, y, 12, '#FFFFFF', 2) + C(x, y, 6.5, '#F2B531', 1.6);
+  return C(60, 60, 54, '#4A4038', 3) + C(60, 60, 46, '#C9402B', 2.5) + sc(60, 60, 38, 12, 4, 3.2, '#A02A1C') + egg(42, 48) + egg(76, 46) + egg(58, 78) + sc(60, 60, 36, 8, 9, 1.8, '#5C8A3A');
+}
+function peppers() {
+  const half = (x, color) => E(x, 60, 21, 31, color) + E(x, 60, 14, 24, '#EFD9A0', 0, 1.8) + sc(x, 60, 9, 6, x, 2.6, '#8A4A2A') + sc(x, 60, 9, 3, x + 1, 2.4, GREEN);
+  return plate() + half(40, '#D6452F') + half(80, '#F0B93A');
+}
+
+// ---- recipe id -> drawing ----
+const ART = {
+  b1: idli, b2: () => dosa(), b3: () => dosa({ potato: true }),
+  b4: () => bf('#F2DDA3', sc(60, 60, 30, 9, 3, 3, GREEN) + sc(60, 60, 30, 7, 4, 3, ORANGE)),
+  b5: () => bf('#F8EDC8', sc(60, 60, 30, 12, 5, 1.6, INK) + C(60, 52, 7, '#F4C443', 1.8)),
+  b6: () => bf('#8A5A3A', C(48, 52, 7, '#FBEFC0', 1.8) + C(68, 48, 7, '#FBEFC0', 1.8) + C(58, 68, 7, '#FBEFC0', 1.8)),
+  b7: () => pancake('#EBCB8E', sc(58, 54, 24, 7, 2, 3, RED) + sc(58, 54, 24, 6, 3, 2.6, GREEN) + sc(58, 54, 24, 5, 4, 2.6, ORANGE)),
+  b8: appam, b9: bhurji,
+  b10: () => bf('#F1D35C', sc(60, 60, 30, 8, 6, 2.6, GREEN) + sc(60, 60, 30, 6, 7, 2.6, ORANGE) + P('M68 80 Q78 68 88 80 Z', '#F4D548', 1.6)),
+  b11: () => pancake('#E6B964', sc(58, 54, 24, 10, 8, 2.4, '#B9833F'), 'curd'),
+  b12: () => pancake('#B9C96C', sc(58, 54, 24, 8, 9, 2.6, '#FFFFFF') + sc(58, 54, 24, 6, 10, 2.4, GREEN)),
+  b13: yogurt, b14: omelette,
+  b15: () => toast('#E8D7B0', C(46, 54, 6, '#C8E3A0', 1.6) + C(62, 62, 6, '#C8E3A0', 1.6) + C(52, 70, 6, RED, 1.6) + C(70, 48, 6, RED, 1.6)),
+
+  l1: () => riceCurry('#D9822B', { veg: true, side: GREEN }),
+  l2: () => riceMound('#F5DE5B', { raita: true }),
+  l3: () => riceMound('#FFFDF5', { dots: sc(60, 55, 18, 7, 3, 2.8, '#C8283E') + sc(60, 55, 18, 4, 4, 2.6, ORANGE) }),
+  l4: () => riceCurry('#D6552E', { side: GREEN }),
+  l5: () => riceMound('#EBD8A8', { raita: true, dots: sc(60, 55, 20, 6, 3, 2.8, GREEN) + sc(60, 55, 20, 5, 4, 2.8, ORANGE) }),
+  l6: () => riceCurry('#E39A3A', { eggs: true }),
+  l7: () => riceCurry('#B5532B', { beans: true, chunks: '#F1E3C0', side: GREEN }),
+  l8: () => riceCurry('#C7692C', { chunks: '#E0A86B' }),
+  l9: () => chapatiSabji('#F0D36B', { cauli: true }),
+  l10: () => chapatiSabji('#E6A92E', { dal: true }),
+  l11: () => chapatiSabji('#5C8A3A', { cubes: true }),
+  l12: () => chapatiSabji('#7FA244', { slices: true, curd: true }),
+  l13: () => chapatiSabji('#C9672C', { chana: true }),
+  l14: () => saladBowl({ chick: true, tomato: true, cuc: true }),
+  l15: wrap,
+  l16: () => soupBowl('#D9902F', sc(60, 60, 26, 6, 3, 3, ORANGE) + sc(60, 60, 26, 5, 4, 2.6, RED)),
+  l17: buddha,
+  l18: () => saladBowl({ beans: true, tuna: true, tomato: true, cuc: true }),
+
+  d1: () => dosa({ sides: true }),
+  d2: () => riceCurry('#D6552E', { chunks: '#F3E6D0' }),
+  d3: () => riceCurry('#F2E3C0', { chunks: '#C9793A', veg: true }),
+  d4: () => riceCurry('#A83A22', { chunks: '#C9793A', chili: true }),
+  d5: () => riceCurry('#F0D98A', { veg: true }),
+  d6: () => riceCurry('#F3EBCF', { strips: true }),
+  d7: prawns,
+  d8: () => riceCurry('#8A4A22', { chunks: '#C98F63' }),
+  d9: () => chapatiSabji('#A8402A', { eggs: true }),
+  d10: () => riceMound('#E4573A', { raita: true, dots: sc(60, 55, 20, 6, 3, 2.6, '#C8281E') + sc(60, 55, 20, 4, 4, 2.4, GREEN) }),
+  d11: () => chapatiSabji('#E58A2B', { cubes: true }),
+  d12: () => chapatiSabji('#E6A92E', { mixed: true }),
+  d13: () => chapatiSabji('#A8581F', { chunks: '#E0A86B' }),
+  d14: () => chapatiSabji('#8E2F22', { beans: true }),
+  d15: () => chapatiSabji('#6B4F63', {}),
+  d16: () => chapatiSabji('#E58A2B', { peas: true, cubes: true }),
+  d17: () => chapatiSabji('#C8D58A', { chana: true }),
+  d18: () => fishPlate('#F3E6D0', [['#E0B45A', 4, 2], [RED, 3, 3], ['#3B3A2E', 3, 4]]),
+  d19: () => fishPlate('#EE8F63', [['#FFFDF5', 5, 2], ['#7FB04A', 4, 3]]),
+  d20: chickenPlate,
+  d21: () => riceCurry('#E58A2B', { chickpea: true }),
+  d22: () => riceMound('#CFE0A8', { lemon: true, dots: sc(60, 55, 20, 8, 3, 2.4, '#4F8A33') }),
+  d23: shakshuka, d24: peppers
+};
+// Generic drawings by dish category, tinted from the dish id, for dishes without their own illustration.
+const hashId = id => { let h = 7; for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+const TINTS = ['#E58A2B', '#D6452F', '#C98A2B', '#8A5A3A', '#5C8A3A', '#E9B38A', '#F2D36B', '#B9833F', '#D9822B', '#A94E2A'];
+function genericDish(r) {
+  const h = hashId(r.id), col = TINTS[h % TINTS.length], col2 = TINTS[(h >> 4) % TINTS.length];
+  switch (r.cat) {
+    case 'bread': return plate() + C(46, 68, 26, '#EBC77A') + C(68, 62, 26, '#E2B565') + C(56, 46, 26, '#EBC77A') + sc(56, 48, 18, 9, h % 97, 2.2, '#B9833F');
+    case 'grain': return plate() + E(60, 62, 36, 28, '#FFFDF5') + sc(60, 62, 25, 16, h % 91, 1.2, '#DDD3BC') + sc(60, 58, 20, 6, h % 53, 2.2, col);
+    case 'curry': return bowlBase('#F3E3CF', col) + sc(60, 60, 28, 7, h % 71, 4, col2) + sc(60, 60, 28, 4, h % 67, 2.4, GREEN);
+    case 'veg': return bf('#F6EFD9', sc(60, 60, 30, 8, h % 73, 4.5, GREEN) + sc(60, 60, 30, 6, h % 79, 4.2, ORANGE) + sc(60, 60, 30, 4, h % 83, 4, col));
+    case 'protein': return plate() + E(48, 56, 22, 15, col, -20) + E(74, 68, 20, 14, col2, 15) + sc(60, 60, 34, 9, h % 61, 2.2, GREEN);
+    case 'side': return plate() + smallBowl(60, 60, 28, col, sc(60, 60, 17, 7, h % 59, 2.2, col2));
+    default: return bf('#FFFFFF', sc(60, 60, 30, 10, h % 59, 5, GREEN) + sc(60, 60, 30, 6, h % 57, 4, RED) + sc(60, 60, 30, 4, h % 55, 4, col));
+  }
+}
+function ill(id) {
+  const r = recipeById(id), f = ART[id] || (r && r.art && ART[r.art]);
+  if (f) return `<svg class="ill" viewBox="0 0 120 120" aria-hidden="true">${f()}</svg>`;
+  return r ? `<svg class="ill" viewBox="0 0 120 120" aria-hidden="true">${genericDish(r)}</svg>` : '';
+}
+const ico = r => `<span class="ico">${ill(r.lead || r.id) || r.icon}</span>`;
+// ===== App part 1: state, helpers, icons, the four setup steps =====
+const $app = document.getElementById('app');
+const STORE = 'familyTable.v1';
+const ICONS = {
+  plus: 'M12 5v14M5 12h14', minus: 'M5 12h14', check: 'M5 13l4 4L19 7', x: 'M6 6l12 12M18 6L6 18',
+  trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3', left: 'M15 5l-7 7 7 7', right: 'M9 5l7 7-7 7', down: 'M5 9l7 7 7-7',
+  alert: 'M12 4l9 16H3zM12 10v4M12 17v.5', swap: 'M4 8h13l-3-3M20 16H7l3 3', copy: 'M9 9h11v11H9zM5 15V4h11', refresh: 'M20 11a8 8 0 10-2.3 5.7M20 4v7h-7',
+  cal: 'M5 6h14v14H5zM5 10h14M9 3v4M15 3v4', basket: 'M4 9h16l-2 10H6zM9 9l3-5 3 5', heart: 'M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z', leaf: 'M5 19c0-8 5-13 14-14 0 9-5 14-14 14zM5 19l7-7',
+  spark: 'M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z', info: 'M12 8v.5M12 11v6M3 12a9 9 0 1018 0 9 9 0 10-18 0', book: 'M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3zM5 17a3 3 0 013-3h11', edit: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4', dup: 'M8 8h12v12H8zM4 16V4h12'
+};
+function ic(n, cls) { return `<svg class="ic ${cls || ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICONS[n]}"/></svg>`; }
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const A = (a, arg) => `data-action="${a}" data-arg="${esc(arg == null ? '' : arg)}" data-fk="${a}:${esc(arg == null ? '' : arg)}"`;
+
+function iso(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function nextMonday() { const d = new Date(); d.setDate(d.getDate() + ((8 - d.getDay()) % 7)); return iso(d); }
+function dayDate(i) { const [y, m, d] = state.start.split('-').map(Number); return new Date(y, m - 1, d + i); }
+function dayLabel(i, long) { return dayDate(i).toLocaleDateString(undefined, long ? { weekday: 'long', day: 'numeric', month: 'long' } : { weekday: 'short', day: 'numeric', month: 'short' }); }
+function wdName(i) { return dayDate(i).toLocaleDateString(undefined, { weekday: 'long' }); }
+
+function defaultState() {
+  return {
+    hhName: 'The Example Family', start: nextMonday(), batch: true, cur: 0, example: true, seed: 1,
+    members: [
+      { id: 1, name: 'Mum', age: 38, allergies: ['peanut'], diets: [], health: [], likes: 'sambar', dislikes: '' },
+      { id: 2, name: 'Dad', age: 41, allergies: [], diets: ['halal'], health: ['lowsalt'], likes: 'fish', dislikes: 'brinjal' },
+      { id: 3, name: 'Sam', age: 7, allergies: ['egg'], diets: [], health: [], likes: 'dosa, idli', dislikes: 'bitter gourd' },
+      { id: 4, name: 'Nana', age: 78, allergies: ['shellfish'], diets: [], health: ['soft', 'lowsugar'], likes: '', dislikes: '' }
+    ],
+    stock: [
+      { name: 'Rice', qty: 1000, unit: 'g', soon: false },
+      { name: 'Toor dal', qty: 500, unit: 'g', soon: false },
+      { name: 'Chicken thigh', qty: 400, unit: 'g', soon: true }
+    ],
+    fridge: [{ name: 'Vegetable chili', meals: 1 }],
+    requests: [{ day: 1, meal: 'd', text: 'curry' }],
+    skips: ['5-d']
+  };
+}
+function blankState() {
+  return { hhName: 'Our household', start: nextMonday(), batch: true, cur: 0, example: false, seed: 1,
+    members: [{ id: Date.now(), name: '', age: 35, allergies: [], diets: [], health: [], likes: '', dislikes: '' }],
+    stock: [], fridge: [], requests: [], skips: [] };
+}
+
+let state = defaultState();
+let ui = { view: 'wizard', step: 1, tab: 'plan', open: {}, checked: {}, plan: null, alt: {}, day: 0, range: 'day', shopView: 'meal', done: {} };
+
+// Every planned week is kept, keyed by its start date. Household members are shared; stock, fridge, requests and eating-out belong to the week.
+let weeks = {};
+const WK_FIELDS = ['start', 'seed', 'stock', 'fridge', 'requests', 'skips', 'cookFor', 'batch'];
+function commitWeek() {
+  if (!ui.plan) return;
+  if (state.wkKey && state.wkKey !== state.start) delete weeks[state.wkKey];
+  state.wkKey = state.start;
+  const w = { plan: ui.plan, checked: ui.checked, done: ui.done };
+  WK_FIELDS.forEach(k => { w[k] = state[k]; });
+  weeks[state.start] = w;
+}
+function save() { try { commitWeek(); localStorage.setItem(STORE, JSON.stringify({ state, plan: ui.plan, checked: ui.checked, done: ui.done, weeks })); } catch (e) { /* storage may be unavailable */ } if (typeof cloudQueue === 'function') cloudQueue(); }
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE); if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d && d.state && Array.isArray(d.state.members) && d.state.members.length) {
+      weeks = d.weeks && typeof d.weeks === 'object' ? d.weeks : {};
+      state = d.state; state.cur = Math.min(state.cur || 0, state.members.length - 1);
+      if (d.plan && Array.isArray(d.plan.slots) && d.plan.slots.length === 21) { ui.plan = d.plan; ui.checked = d.checked || {}; ui.done = d.done || {}; ui.day = todayIdx(); ui.view = 'results'; repairPlans(); }
+    }
+  } catch (e) { /* ignore */ }
+}
+
+const nm = (m, i) => (m.name || '').trim() || `Person ${i + 1}`;
+function engineState() { return { ...state, scale: (state.cookFor || state.members.length) / state.members.length, members: state.members.map((m, i) => ({ ...m, name: nm(m, i) })) }; }
+function initial(m, i) { return esc(nm(m, i).charAt(0).toUpperCase()); }
+const lc = i => 'c' + (i % 6);
+
+// ---------- chrome ----------
+function header() {
+  return `<div class="top"><div class="brand"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="var(--accent)" stroke="var(--ink)" stroke-width="3"/><circle cx="24" cy="24" r="12" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/><path d="M24 15c-5 0-8 3-8 8 5 0 8-3 8-8z" fill="var(--primary)"/></svg>Family Table</div>${state.example ? '<span class="hint-tag">Example family</span>' : ''}<span id="cloudtag" class="hint-tag cloud-${cloud.status}">${cloudLabel()}</span>${ui.view === 'recipes' ? '' : `<button class="btn ghost small-btn" ${A('recipes')}>${ic('book')} Dishes</button>`}</div>`;
+}
+const STEP_LBL = ['Household', 'Needs', 'Kitchen', 'Plan'];
+function stepper() {
+  const back = ui.plan ? `<div><button class="btn ghost small-btn" ${A('goto-results')}>${ic('left')} Back to my plan</button></div>` : '';
+  return back + `<ol class="steps" aria-label="Setup steps">${STEP_LBL.map((l, i) => {
+    const n = i + 1, cur = ui.step === n, done = ui.step > n;
+    return `<li><button ${A('goto', n)} class="${done ? 'done' : ''}" ${cur ? 'aria-current="step"' : ''}><span class="num">${done ? ic('check') : n}</span><span class="lbl">${l}</span></button></li>`;
+  }).join('')}</ol>`;
+}
+
+// ---------- step 1: household ----------
+function ageNote(age) {
+  const a = ageInfo(age);
+  const extra = age < 4 ? ' Meals are kept soft and mild.' : age < 12 ? ' Spicy food is always left out.' : '';
+  return `${a.label}. Portions are about ${Math.round(a.factor * 100)}% of an adult's.${extra}`;
+}
+function step1() {
+  const ex = state.example ? `<div class="notice ok">${ic('info')}<div><b>This is an example family.</b> Change anything to try it out, or <button class="btn small-btn ghost" ${A('fresh')}>Start with my own household</button></div></div>` : '';
+  const members = state.members.map((m, i) => `
+    <li class="member-card"><span class="avatar ${lc(i)}">${initial(m, i)}</span>
+      <div class="row" style="align-items:flex-end">
+        <div class="field"><label for="n${i}">Name</label><input type="text" id="n${i}" data-f="name" data-i="${i}" value="${esc(m.name)}" placeholder="Person ${i + 1}" autocomplete="off"></div>
+        <div class="field" style="flex:0 0 auto"><span class="lab">Age</span>
+          <div class="stepper"><button ${A('age-', i)} aria-label="Younger">${ic('minus')}</button><span class="val" aria-live="polite">${m.age}</span><button ${A('age+', i)} aria-label="Older">${ic('plus')}</button></div></div>
+      </div>
+      ${state.members.length > 1 ? `<button class="btn ghost small-btn rm" ${A('rm-member', i)}>${ic('trash')} Remove</button>` : ''}
+      <p class="fine" style="grid-column:1/-1">${esc(ageNote(m.age))}</p>
+    </li>`).join('');
+  return `${ex}
+  <section class="card"><h2>Who is eating together?</h2>
+    <div class="row">
+      <div class="field"><label for="hh">Household name</label><input type="text" id="hh" data-f="hh" value="${esc(state.hhName)}"></div>
+      <div class="field"><label for="st">Week starts on</label><input type="date" id="st" data-f="start" value="${esc(state.start)}"></div>
+    </div>
+    <ul class="list">${members}</ul>
+    <div><button class="btn ghost" ${A('add-member')}>${ic('plus')} Add a person</button></div>
+    <label class="item" style="cursor:pointer"><input type="checkbox" data-f="batch" ${state.batch ? 'checked' : ''}><span class="grow">Cook a double batch some evenings so the next day's lunch is ready <span class="muted" style="font-weight:400">(up to 2 times a week)</span></span></label>
+  </section>
+  <div class="actions"><span></span><button class="btn big" ${A('goto', 2)}>Next: everyone's needs ${ic('right')}</button></div>`;
+}
+
+// ---------- step 2: needs ----------
+function chipGroup(opts, list, key, i) {
+  return `<div class="chips">${opts.map(([v, l]) => `<button class="chip" ${A('tog', key + '|' + i + '|' + v)} aria-pressed="${list.includes(v)}">${l}</button>`).join('')}</div>`;
+}
+function meterHtml() {
+  const es = engineState(), m = es.members[state.cur];
+  const mine = RECIPES.filter(r => conflicts(r, m).length === 0).length;
+  const pc = { b: 0, l: 0, d: 0 };
+  engineRecipes().forEach(r => { if (validFor(r, es.members).ok) pc[r.meal]++; });
+  const low = Math.min(pc.b, pc.l, pc.d) < 5;
+  return `<div class="meter" role="status"><div><b>${esc(m.name)} can eat ${mine} of ${RECIPES.length} dishes.</b></div>
+    <div class="nums"><span>Meal ideas that suit everyone together:</span><span>Breakfast ${pc.b}</span><span>Lunch ${pc.l}</span><span>Dinner ${pc.d}</span></div>
+    ${low ? `<div class="tag warn" style="align-self:flex-start">${ic('alert')} Few matches. Some meals may repeat.</div>` : ''}</div>`;
+}
+function step2() {
+  const i = state.cur, m = state.members[i];
+  const tabs = state.members.map((x, k) => `<button class="mtab" role="tab" ${A('pick', k)} aria-selected="${k === i}"><span class="avatar ${lc(k)}">${initial(x, k)}</span>${esc(nm(x, k))}</button>`).join('');
+  const auto = m.age < 4 ? 'Under 4: meals are always soft and mild.' : m.age < 12 ? 'Under 12: spicy food is always left out.' : '';
+  return `<section class="card"><h2>What does ${esc(nm(m, i))} need?</h2>
+    <div class="mtabs" role="tablist">${tabs}</div>
+    <div><div class="lab">Allergies and intolerances <span class="muted" style="font-weight:400">(never served)</span></div>${chipGroup(ALLERGY_OPTS, m.allergies, 'allergies', i)}</div>
+    <div><div class="lab">Diet or belief</div>${chipGroup(DIET_OPTS, m.diets, 'diets', i)}</div>
+    <div><div class="lab">Health and comfort</div>${chipGroup(HEALTH_OPTS, m.health, 'health', i)}${auto ? `<p class="fine" style="margin-top:8px">${auto}</p>` : ''}</div>
+    <div class="row">
+      <div class="field"><label for="lk">Foods ${esc(nm(m, i))} loves</label><input type="text" id="lk" data-f="likes" data-i="${i}" value="${esc(m.likes)}" placeholder="curry, pasta, apples"></div>
+      <div class="field"><label for="dk">Foods ${esc(nm(m, i))} will not eat</label><input type="text" id="dk" data-f="dislikes" data-i="${i}" value="${esc(m.dislikes)}" placeholder="mushrooms, olives, fish"></div>
+    </div>
+    <p class="fine">Separate foods with commas. Loved foods appear more often. Foods they will not eat are treated like a restriction.</p>
+    <div id="meter">${meterHtml()}</div>
+    ${i < state.members.length - 1 ? `<div><button class="btn ghost" ${A('pick', i + 1)}>Next person ${ic('right')}</button></div>` : ''}
+  </section>
+  <div class="actions"><button class="btn ghost big" ${A('goto', 1)}>${ic('left')} Back</button><button class="btn big" ${A('goto', 3)}>Next: your kitchen ${ic('right')}</button></div>`;
+}
+
+// ---------- step 3: kitchen ----------
+const QUICK = [['Rice', 1000, 'g'], ['Toor dal', 500, 'g'], ['Wheat flour (atta)', 1000, 'g'], ['Eggs', 6, 'pc'], ['Curd', 500, 'g'], ['Potato', 1000, 'g'], ['Onion', 500, 'g'], ['Tomato', 500, 'g'], ['Chicken thigh', 500, 'g']];
+function ingredientNames() { const s = new Set(); RECIPES.forEach(r => r.ingr.forEach(i => { if (i.cat !== 'S') s.add(i.name); })); return [...s].sort(); }
+function step3() {
+  const stock = state.stock.length ? state.stock.map((s, i) => `
+    <li class="item"><span class="grow">${esc(s.name)}</span>
+      <input type="number" min="0" step="${s.unit === 'pc' ? 1 : 50}" value="${s.qty}" data-f="stockqty" data-i="${i}" aria-label="Amount of ${esc(s.name)}"><span class="muted">${s.unit}</span>
+      <button class="chip" ${A('soon', i)} aria-pressed="${!!s.soon}">Use soon</button>
+      <button class="icon-btn" ${A('rm-stock', i)} aria-label="Remove ${esc(s.name)}">${ic('trash')}</button></li>`).join('')
+    : `<li class="empty">Nothing added yet. Whatever you have will be used first and left off the shopping list.</li>`;
+  const quick = QUICK.filter(q => !state.stock.some(s => s.name.toLowerCase() === q[0].toLowerCase()))
+    .map(q => `<button class="chip" ${A('quick', q[0])}>${ic('plus')} ${q[0]}</button>`).join('');
+  const fridge = state.fridge.length ? state.fridge.map((f, i) => `
+    <li class="item"><span class="grow">${esc(f.name)}</span><span class="muted">${f.meals} ${f.meals === 1 ? 'meal' : 'meals'}</span>
+      <button class="icon-btn" ${A('rm-fridge', i)} aria-label="Remove ${esc(f.name)}">${ic('trash')}</button></li>`).join('')
+    : `<li class="empty">No cooked food at home.</li>`;
+  return `<section class="card"><h2>What is already in the kitchen?</h2>
+    <div class="row">
+      <div class="field" style="flex:2 1 220px"><label for="st-name">Ingredient</label><input type="text" id="st-name" list="ingr" placeholder="Start typing, e.g. rice" autocomplete="off"><datalist id="ingr">${ingredientNames().map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>
+      <div class="field" style="flex:1 1 110px"><label for="st-qty">Amount</label><input type="number" id="st-qty" min="0" value="500"></div>
+      <div class="field" style="flex:1 1 110px"><label for="st-unit">Unit</label><select id="st-unit"><option value="g">grams</option><option value="ml">ml</option><option value="pc">pieces</option></select></div>
+      <label class="chip" style="cursor:pointer"><input type="checkbox" id="st-soon"> Use soon</label>
+      <button class="btn" ${A('add-stock')}>${ic('plus')} Add</button>
+    </div>
+    ${quick ? `<div><div class="lab" style="margin-bottom:8px">Quick add</div><div class="chips">${quick}</div></div>` : ''}
+    <ul class="list">${stock}</ul>
+    <p class="fine">Pieces are for eggs, bread slices and fruit. Salt, pepper, oil and spices are always assumed to be at home.</p>
+  </section>
+  <section class="card"><h2>Cooked food to finish up</h2>
+    <div class="row">
+      <div class="field" style="flex:2 1 220px"><label for="fr-name">Dish</label><input type="text" id="fr-name" placeholder="e.g. Vegetable chili" autocomplete="off"></div>
+      <div class="field" style="flex:0 0 auto"><span class="lab">Meals it covers</span><div class="stepper"><button ${A('fr-')} aria-label="Fewer">${ic('minus')}</button><span class="val" id="fr-n" aria-live="polite">${ui.frN || 1}</span><button ${A('fr+')} aria-label="More">${ic('plus')}</button></div></div>
+      <button class="btn" ${A('add-fridge')}>${ic('plus')} Add</button>
+    </div>
+    <ul class="list">${fridge}</ul>
+    <p class="fine">These fill the first lunches. Please check they suit everyone, as we cannot see what is in them.</p>
+  </section>
+  <div class="actions"><button class="btn ghost big" ${A('goto', 2)}>${ic('left')} Back</button><button class="btn big" ${A('goto', 4)}>Next: plan the week ${ic('right')}</button></div>`;
+}
+
+// ---------- step 4: plan ----------
+function step4() {
+  const reqs = state.requests.length ? state.requests.map((q, i) => `
+    <li class="item"><span class="grow">${esc(wdName(q.day))} ${MEAL_NAME[q.meal].toLowerCase()}: ${esc(q.text)}</span><button class="icon-btn" ${A('rm-req', i)} aria-label="Remove request">${ic('trash')}</button></li>`).join('')
+    : `<li class="empty">No special requests.</li>`;
+  const grid = `<div class="grid-out" role="group" aria-label="Meals eaten out"><span></span>${MEALS.map(m => `<span class="lab" style="text-align:center">${MEAL_NAME[m]}</span>`).join('')}
+    ${[0, 1, 2, 3, 4, 5, 6].map(d => `<span class="dl">${esc(dayDate(d).toLocaleDateString(undefined, { weekday: 'short' }))}</span>${MEALS.map(m => { const on = state.skips.includes(d + '-' + m); return `<button class="chip" ${A('skip', d + '-' + m)} aria-pressed="${on}" aria-label="${esc(wdName(d))} ${MEAL_NAME[m]} eating out">${on ? 'Out' : 'Home'}</button>`; }).join('')}`).join('')}</div>`;
+  const nR = state.members.reduce((a, m) => a + m.allergies.length + m.diets.length + m.health.length + terms(m.dislikes).length, 0);
+  return `<section class="card"><h2>Anything special this week?</h2>
+    <div class="row">
+      <div class="field" style="flex:1 1 150px"><label for="rq-day">Day</label><select id="rq-day">${[0, 1, 2, 3, 4, 5, 6].map(d => `<option value="${d}">${esc(wdName(d))}</option>`).join('')}</select></div>
+      <div class="field" style="flex:1 1 150px"><label for="rq-meal">Meal</label><select id="rq-meal">${MEALS.map(m => `<option value="${m}" ${m === 'd' ? 'selected' : ''}>${MEAL_NAME[m]}</option>`).join('')}</select></div>
+      <div class="field" style="flex:2 1 200px"><label for="rq-text">I would like</label><input type="text" id="rq-text" placeholder="fish, curry, pasta, Italian" autocomplete="off"></div>
+      <button class="btn" ${A('add-req')}>${ic('plus')} Add</button>
+    </div>
+    <ul class="list">${reqs}</ul>
+    <p class="fine">Type a food, ingredient or cuisine. It is only added if it suits everyone.</p>
+  </section>
+  <section class="card"><h2>Eating out or away?</h2><p class="muted">Tap a meal you will not cook. It is left out of the plan and the shopping list.</p>${grid}</section>
+  <section class="card soft"><div class="row" style="align-items:center"><div style="flex:1 1 260px"><h3>Ready when you are</h3><p>${state.members.length} ${state.members.length === 1 ? 'person' : 'people'}, ${nR} needs to respect, ${state.stock.length} items in stock.</p></div><button class="btn big" ${A('generate')}>${ic('spark')} Make our week</button></div></section>
+  <div class="actions"><button class="btn ghost big" ${A('goto', 3)}>${ic('left')} Back</button><span></span></div>`;
+}
+// ===== App part 2: results views, events, boot =====
+const CUISINE_LBL = { 'South Indian': 'South Indian', 'North Indian': 'Chapati and sabji', 'Mediterranean': 'Mediterranean' };
+const GROUP_LBL = { v: 'Vegetables', p: 'Protein', c: 'Grains', f: 'Fruit', d: 'Dairy' };
+function qtyText(q, unit, name) {
+  if (unit === 'pc') { const v = Math.round(q * 2) / 2; return `${v}${/bread/i.test(name) ? ' slices' : /tortilla/i.test(name) ? ' wraps' : ''}`; }
+  const v = q < 20 ? Math.round(q) : Math.round(q / 5) * 5;
+  return fmtQty(v, unit);
+}
+function buyText(it) { return it.unit === 'pc' ? `${it.buy}${/bread/i.test(it.name) ? ' slices' : /tortilla/i.test(it.name) ? ' wraps' : ''}` : fmtQty(it.buy, it.unit); }
+function haveText(it) { return it.unit === 'pc' ? `${Math.round(it.fromStock)}` : fmtQty(Math.round(it.fromStock), it.unit); }
+function needsLine(m) {
+  const lab = (o, v) => (o.find(x => x[0] === v) || [0, v])[1];
+  const p = [];
+  m.allergies.forEach(a => p.push('no ' + lab(ALLERGY_OPTS, a).toLowerCase()));
+  m.diets.forEach(d => p.push(lab(DIET_OPTS, d).toLowerCase()));
+  m.health.forEach(h => p.push(lab(HEALTH_OPTS, h).toLowerCase()));
+  terms(m.dislikes).forEach(t => p.push('no ' + t));
+  if (m.age < 4) p.push('soft and mild'); else if (m.age < 12) p.push('mild');
+  return p.length ? p.join(', ') : 'no restrictions';
+}
+function toast(msg) {
+  const old = document.querySelector('.toast'); if (old) old.remove();
+  const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+// ---------- plan tab ----------
+const groupsOf = dishes => [...new Set(dishes.flatMap(d => d.r.groups))];
+function mealRow(i, es, S, f) {
+  const s = ui.plan.slots[i], day = Math.floor(i / 3), meal = MEALS[i % 3], kind = MEAL_NAME[meal];
+  if (!s || s.kind === 'skip') return `<div class="meal"><div class="skip-row"><span class="meal-ic">🍽️</span><div><div class="meal-kind">${kind}</div><div>Eating out</div></div></div></div>`;
+  if (s.kind === 'none') return `<div class="meal"><div class="none-row"><span class="meal-ic">⚠️</span><div><div class="meal-kind">${kind}</div><div>${s.removed ? 'That dish was removed from your dish list. Choose another in the Day view.' : 'No meal idea fits everyone here. Loosen a dislike or health need to add choices, or pick a dish in the Day view.'}</div></div></div></div>`;
+  if (s.kind === 'fridge') return `<div class="meal"><div class="meal-btn" style="cursor:default"><span class="meal-ic">🥡</span><div><div class="meal-kind">${kind}</div><div class="meal-name">${esc(s.name)}</div><div class="meal-meta"><span class="tag good">From your fridge</span><span class="tag warn">Check it suits everyone</span></div></div><span></span></div></div>`;
+  const dishes = slotDishes(s), r = dishes[0].r, open = !!ui.open[i];
+  const tot = Math.round(dishesNutr(dishes).kcal), maxT = Math.max(...dishes.map(d => d.r.time));
+  const tags = [`<span class="tag">${maxT} min</span>`, `<span class="tag">${tot} kcal</span>`]
+    .concat(dishes.length > 1 ? [`<span class="tag good">${dishes.length} courses</span>`] : []).concat(groupsOf(dishes).map(g => `<span class="tag good">${GROUP_LBL[g]}</span>`));
+  if (s.cookDouble) tags.push(`<span class="tag warn">Double batch for ${esc(wdName(day + 1))} lunch</span>`);
+  if (s.kind === 'leftover') tags.unshift(`<span class="tag warn">Leftovers from ${esc(wdName(s.fromDay))}</span>`);
+  if (s.request) tags.unshift(`<span class="tag" style="background:var(--accent);color:var(--on-accent);border-color:var(--ink)">Your request</span>`);
+  if (s.repeated) tags.push(`<span class="tag bad">Repeat</span>`);
+  return `<div class="meal ${open ? 'open' : ''}"><button class="meal-btn" ${A('open', i)} aria-expanded="${open}">
+      <span class="meal-ic" aria-hidden="true">${ill(r.id) || r.icon}</span>
+      <span><span class="meal-kind">${kind}</span><br><span class="meal-name">${s.kind === 'leftover' ? 'Leftover ' : ''}${esc(dishes.map(d => d.r.name).join(' + '))}</span><span class="meal-meta">${tags.join('')}</span></span>
+      ${ic('down', 'chev')}</button>${open ? mealDetail(i, s, r, es, f) : ''}</div>`;
+}
+function mealDetail(i, s, r0, es, f) {
+  const dishes = slotDishes(s), multi = dishes.length > 1;
+  const n = dishesNutr(dishes);
+  const part = d => {
+    const r = d.r, mult = d.mult, notes = [];
+    es.members.forEach(m => {
+      if ((m.health.includes('soft') || m.age < 4) && r.soft === 1) notes.push(`${esc(m.name)}: cut into small pieces and add a little sauce so it is easy to chew.`);
+      if (m.diets.includes('halal') && r.allergens.some(a => MEAT.includes(a))) notes.push(`${esc(m.name)}: buy halal-certified meat.`);
+      if (m.diets.includes('kosher') && r.allergens.some(a => MEAT.includes(a))) notes.push(`${esc(m.name)}: buy kosher-certified meat.`);
+    });
+    const body = d.kind === 'leftover'
+      ? `<div><h4>Reheat</h4><p>Cooked as a double batch on ${esc(wdName(s.fromDay))} evening. Keep it covered in the fridge and heat until steaming hot all the way through.</p></div>`
+      : `<div><h4>${mult === 2 ? 'Ingredients for a double batch' : 'Ingredients'} for ${es.members.length} ${es.members.length === 1 ? 'person' : 'people'}</h4><ul>${r.ingr.map(g => g.cat === 'S' ? `<li>${esc(g.name)}, to taste</li>` : `<li>${qtyText(g.qty * f * mult, g.unit, g.name)} ${esc(g.name)}</li>`).join('')}</ul></div>
+         ${r.steps.length ? `<div><h4>Method</h4><ol>${r.steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>` : ''}`;
+    return `<div class="cblock">${multi ? `<h3 class="cb-h">Course ${d.course}: ${esc(r.name)}</h3>` : `<h3 class="cb-h">${esc(r.name)}</h3>`}${d.portion !== 1 ? `<p class="muted">Portion ${portionText(d.portion)}</p>` : ''}${body}
+      ${notes.length ? `<div class="notice">${ic('info')}<div>${notes.join('<br>')}</div></div>` : ''}
+      ${r.variation ? `<p><b>Notes:</b> ${esc(r.variation)}</p>` : ''}</div>`;
+  };
+  const alts = ui.alt[i] ? alternatives(ui.plan, es, i, 4) : null;
+  const altHtml = alts ? (alts.length ? `<div class="alts">${alts.map(a => `<div class="alt"><span>${ico(a)} <b>${esc(a.name)}</b> <span class="muted small">${a.nutr.kcal} kcal, ${a.time} min</span></span><button class="btn small-btn" ${A('swap', i + '|' + a.id)}>${ic('swap')} Use this</button></div>`).join('')}</div>` : `<p class="muted">No other meal idea fits everyone for this meal.</p>`) : '';
+  return `<div class="detail">
+    <div class="nutr-row" aria-label="Nutrition per adult serving${multi ? ', all courses together' : ''}"><span>${Math.round(n.kcal)} kcal</span><span>${Math.round(n.protein)} g protein</span><span>${Math.round(n.carbs)} g carbs</span><span>${Math.round(n.fat)} g fat</span><span>${Math.round(n.fiber)} g fibre</span><span>${Math.round(n.sodium)} mg sodium</span></div>
+    ${dishes.map(part).join('')}
+    <div><button class="btn ghost small-btn" ${A('alts', i)}>${ic('swap')} ${ui.alt[i] ? 'Hide' : 'Show'} other meal ideas</button></div>${altHtml}</div>`;
+}
+
+// ---------- shopping tab ----------
+function groceryText(S) {
+  const out = [`Shopping list for ${state.hhName}`, ''];
+  S.grocery.forEach(g => { const it = g.items.filter(x => x.buy > 0); if (it.length) { out.push(g.cat.toUpperCase()); it.forEach(x => out.push(`[ ] ${x.name}: ${buyText(x)}`)); out.push(''); } });
+  return out.join('\n').trim();
+}
+
+// ---------- nutrition tab ----------
+function barRow(label, val, target, unit, okFlag, invert) {
+  const pct = Math.min(100, Math.round((val / target) * 100));
+  const tag = okFlag ? `<span class="tag good">${ic('check')} On track</span>` : `<span class="tag warn">${ic('alert')} ${invert ? 'High' : 'A bit low'}</span>`;
+  return `<div class="bar-row"><span class="lab">${label}</span><div class="track" role="img" aria-label="${label}: ${val} ${unit} of ${target} ${unit}"><span class="fill ${okFlag ? '' : 'warn'}" style="width:${pct}%"></span></div><span>${val} / ${target} ${unit} ${tag}</span></div>`;
+}
+function nutritionTab(es, S) {
+  const cards = S.nutrition.map((n, i) => {
+    const e = n.pctKcal, eok = e >= 65 && e <= 110;
+    return `<section class="card"><div class="row" style="align-items:center;flex-wrap:nowrap"><span class="avatar ${lc(i)}">${initial(es.members[i], i)}</span><div><h3>${esc(n.name)}</h3><span class="fine">${n.label}, ${es.members[i].age} years old</span></div></div>
+      ${barRow('Energy', n.kcal, n.target.kcal, 'kcal', eok, e > 110)}
+      ${barRow('Protein', n.protein, n.target.protein, 'g', n.proteinOk)}
+      ${barRow('Fibre', n.fiber, n.target.fiber, 'g', n.fiberOk)}
+      ${barRow('Sodium', n.sodium, n.target.sodium, 'mg', n.sodiumOk, true)}
+      <p class="fine">${eok ? 'Meals cover the main share of daily energy. Snacks and drinks fill the rest.' : e < 65 ? 'Meals cover less than usual. Add healthy snacks such as fruit, yogurt or nuts.' : 'Meals are above the daily target. Keep snacks light.'}${n.fiberOk ? '' : ' A piece of fruit or extra vegetables would help with fibre.'}</p></section>`;
+  }).join('');
+  const m = S.macro, mx = Math.max(1, ...S.house.map(d => d.kcal));
+  const bars = S.house.map((d, i) => `<div class="daybar"><span>${d.kcal || '-'}</span><span class="col" style="height:${Math.max(3, Math.round(d.kcal / mx * 130))}px" role="img" aria-label="${esc(wdName(i))}: ${d.kcal} kcal"></span><span>${esc(dayDate(i).toLocaleDateString(undefined, { weekday: 'short' }))}</span></div>`).join('');
+  return `<div class="mem-nutr">${cards}</div>
+    <section class="card"><h3>Balance of the whole week</h3>
+      <div class="macro" role="img" aria-label="Protein ${m.protein}%, carbohydrate ${m.carbs}%, fat ${m.fat}% of energy"><span class="m-p" style="flex:${m.protein}">${m.protein}%</span><span class="m-c" style="flex:${m.carbs}">${m.carbs}%</span><span class="m-f" style="flex:${m.fat}">${m.fat}%</span></div>
+      <div class="legend"><span><i class="m-p"></i>Protein</span><span><i class="m-c"></i>Carbohydrate</span><span><i class="m-f"></i>Fat</span></div>
+      <p class="fine">A balanced plate is roughly 10 to 35% protein, 45 to 65% carbohydrate and 20 to 35% fat. Every lunch and dinner includes vegetables and a protein source.</p></section>
+    <section class="card"><h3>Energy per day (one adult serving, kcal)</h3><div class="daybars">${bars}</div></section>
+    <p class="fine">These are estimates from typical recipes and portion sizes, not medical advice. Check with a doctor or dietitian for medical diets.</p>`;
+}
+
+// ---------- leftovers tab ----------
+function leftoversTab(es, S) {
+  const L = S.leftovers;
+  const planned = L.planned.length ? L.planned.map(x => `<li class="item"><span class="grow">${esc(wdName(x.fromDay))} dinner to ${esc(wdName(x.day))} lunch: ${ico(x.recipe)} ${esc(x.recipe.name)}</span></li>`).join('')
+    : `<li class="empty">${state.batch ? 'No suitable double batches this week.' : 'Batch cooking is off. Turn it on in step 1 to save cooking time.'}</li>`;
+  const fr = L.fridge.length ? L.fridge.map(x => `<li class="item"><span class="grow">${esc(x.name)} on ${esc(wdName(x.day))}</span></li>`).join('') : `<li class="empty">No cooked food from the fridge in this plan.</li>`;
+  const used = S.usedStock.length ? `<div class="chips">${S.usedStock.map(u => `<span class="tag good">${ic('check')} ${esc(u.name)}: ${u.unit === 'pc' ? u.qty : fmtQty(u.qty, u.unit)}</span>`).join('')}</div>` : '<p class="muted">None of your stock matched this week\'s meals.</p>';
+  const unused = S.unusedStock.length ? `<ul class="list">${S.unusedStock.map(u => `<li class="item"><span class="grow">${esc(u.name)}: ${u.unit === 'pc' ? u.qty : fmtQty(u.qty, u.unit)} left over${u.wasUsed ? ' after the plan' : ''}</span>${u.soon ? '<span class="tag warn">Use soon</span>' : ''}</li>`).join('')}</ul>` : '<p class="muted">Everything you listed is used. Nothing left over.</p>';
+  const ideas = S.ideas.length ? `<div><h4 style="font-family:var(--font-display);margin:0 0 8px">Ideas to use up the rest</h4><div class="alts">${S.ideas.map(x => x.recipes.map(r => `<div class="alt"><span>${ico(r)} <b>${esc(r.name)}</b> <span class="muted small">uses ${esc(x.stock.name)}</span></span><button class="btn small-btn" ${A('idea', r.id)}>${ic('swap')} Swap into plan</button></div>`).join('')).join('')}</div></div>` : '';
+  return `<section class="card"><h2>Planned leftovers</h2><ul class="list">${planned}</ul><p class="fine">Cool cooked food within 2 hours, keep it covered in the fridge and eat it within 3 days. Reheat until steaming hot.</p></section>
+    <section class="card"><h2>Cooked food from your fridge</h2><ul class="list">${fr}</ul></section>
+    <section class="card"><h2>Your stock</h2><div><h4 style="font-family:var(--font-display);margin:0 0 8px">Used this week</h4>${used}</div><div><h4 style="font-family:var(--font-display);margin:0 0 8px">Not used this week</h4>${unused}</div>${ideas}</section>`;
+}
+
+
+// ---------- render + events ----------
+function render() {
+  const ae = document.activeElement, fk = ae && ae.dataset && ae.dataset.fk;
+  const snap = {}; $app.querySelectorAll('input[id^="st-"],input[id^="fr-"],input[id^="rq-"],select[id^="st-"],select[id^="rq-"]').forEach(el => { snap[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
+  ui._suit = {};
+  const body = ui.view === 'wizard' ? stepper() + [step1, step2, step3, step4][ui.step - 1]() : ui.view === 'recipes' ? renderLibrary() : renderResults();
+  $app.innerHTML = `<div class="wrap${ui.view === 'results' ? ' results' : ''}${ui.view === 'recipes' ? ' lib' : ''}">${header()}${body}</div>`;
+  Object.keys(snap).forEach(id => { const el = document.getElementById(id); if (el) { if (el.type === 'checkbox') el.checked = snap[id]; else el.value = snap[id]; } });
+  if (fk) { const el = $app.querySelector(`[data-fk="${CSS.escape(fk)}"]`); if (el) el.focus({ preventScroll: true }); }
+  const cb = document.getElementById('copy-box'); if (cb) { cb.focus(); cb.select(); }
+  save();
+}
+function regenerate() { ui.plan = generatePlan(engineState(), state.seed); ui.view = 'results'; ui.tab = 'plan'; ui.day = todayIdx(); ui.range = 'day'; ui.done = {}; ui.open = {}; ui.alt = {}; ui.checked = {}; ui.showText = null; }
+const val = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+
+function act(a, arg) {
+  const mem = () => state.members[state.cur];
+  switch (a) {
+    case 'goto': ui.view = 'wizard'; ui.step = +arg; window.scrollTo(0, 0); break;
+    case 'goto-results': ui.view = 'results'; window.scrollTo(0, 0); break;
+    case 'fresh': state = blankState(); weeks = {}; ui.plan = null; ui.step = 1; break;
+    case 'age-': case 'age+': { const m = state.members[+arg]; m.age = Math.max(1, Math.min(110, m.age + (a === 'age+' ? 1 : -1))); break; }
+    case 'add-member': state.cookFor = null; state.members.push({ id: Date.now(), name: '', age: 30, allergies: [], diets: [], health: [], likes: '', dislikes: '' }); break;
+    case 'rm-member': state.cookFor = null; state.members.splice(+arg, 1); state.cur = Math.min(state.cur, state.members.length - 1); break;
+    case 'pick': state.cur = +arg; break;
+    case 'tog': { const [key, i, v] = arg.split('|'); const l = state.members[+i][key]; const k = l.indexOf(v); if (k < 0) l.push(v); else l.splice(k, 1); break; }
+    case 'quick': { const q = QUICK.find(x => x[0] === arg); if (q) state.stock.push({ name: q[0], qty: q[1], unit: q[2], soon: false }); break; }
+    case 'add-stock': { const n = val('st-name').trim(), q = Number(val('st-qty')); if (!n || !(q > 0)) { toast('Type an ingredient and an amount'); return; } const soon = document.getElementById('st-soon').checked; state.stock.push({ name: n, qty: q, unit: val('st-unit'), soon }); document.getElementById('st-name').value = ''; break; }
+    case 'rm-stock': state.stock.splice(+arg, 1); break;
+    case 'soon': state.stock[+arg].soon = !state.stock[+arg].soon; break;
+    case 'fr-': ui.frN = Math.max(1, (ui.frN || 1) - 1); break;
+    case 'fr+': ui.frN = Math.min(6, (ui.frN || 1) + 1); break;
+    case 'add-fridge': { const n = val('fr-name').trim(); if (!n) { toast('Type the name of the dish'); return; } state.fridge.push({ name: n, meals: ui.frN || 1 }); document.getElementById('fr-name').value = ''; ui.frN = 1; break; }
+    case 'rm-fridge': state.fridge.splice(+arg, 1); break;
+    case 'add-req': { const t = val('rq-text').trim(); if (!t) { toast('Type what you would like'); return; } state.requests.push({ day: +val('rq-day'), meal: val('rq-meal'), text: t }); document.getElementById('rq-text').value = ''; break; }
+    case 'rm-req': state.requests.splice(+arg, 1); break;
+    case 'skip': { const k = state.skips.indexOf(arg); if (k < 0) state.skips.push(arg); else state.skips.splice(k, 1); break; }
+    case 'generate': state.seed = 1; regenerate(); window.scrollTo(0, 0); break;
+    case 'week': openWeek(arg); break;
+    case 'next-week': planNext(); break;
+    case 'newseed': state.seed = (state.seed || 1) + 1; regenerate(); toast('Fresh ideas for the week'); break;
+    case 'tab': ui.tab = arg; ui.showText = null; window.scrollTo(0, 0); break;
+    case 'day': ui.day = +arg; break;
+    case 'day-step': ui.day = Math.max(0, Math.min(6, ui.day + Number(arg))); break;
+    case 'range': ui.range = arg; break;
+    case 'shopview': ui.shopView = arg; break;
+    case 'cf-': case 'cf+': { const n = state.members.length, cur = state.cookFor || n; state.cookFor = Math.max(1, Math.min(30, cur + (a === 'cf+' ? 1 : -1))); break; }
+    case 'done': ui.done[arg] = !ui.done[arg]; break;
+    case 'swapopen': ui.open[arg] = true; ui.alt[arg] = !ui.alt[arg]; break;
+    case 'open': ui.open[arg] = !ui.open[arg]; break;
+    case 'alts': ui.alt[arg] = !ui.alt[arg]; break;
+    case 'swap': { const [i, cid] = arg.split('|'); ui.plan = swapMeal(ui.plan, +i, cid); ui.alt[i] = false; toast('Meal swapped. Shopping list updated'); break; }
+    case 'ncourses': {
+      const [i, n] = arg.split('|').map(Number), s = ui.plan.slots[i]; if (!s || s.kind === 'skip') return;
+      const ex = (s.extra || []).slice(0, n - 1); while (ex.length < n - 1) ex.push({ recipeId: '', alt: '' });
+      if (ex.length) s.extra = ex; else delete s.extra;
+      break;
+    }
+    case 'setcourse': {
+      const [i, c, rid] = arg.split('|'), si = +i, ci = +c, s = ui.plan.slots[si]; if (!s) return;
+      if (ci === 0) { if (!rid) return; ui.plan = swap(ui.plan, si, rid); ui.alt[si] = false; }
+      else { const e = s.extra[ci - 1]; e.recipeId = rid; e.portion = 1; e.gen = false; delete e.left; if (e.alt === rid) e.alt = ''; }
+      break;
+    }
+    case 'setportion': {
+      const [i, c, v] = arg.split('|'), s = ui.plan.slots[+i]; if (!s) return;
+      if (+c === 0) s.portion = +v; else s.extra[+c - 1].portion = +v;
+      break;
+    }
+    case 'setalt': {
+      const [i, c, rid] = arg.split('|'), si = +i, ci = +c, s = ui.plan.slots[si]; if (!s) return;
+      const e = ci === 0 ? s : s.extra[ci - 1];
+      if (rid && rid === e.recipeId) { toast('Pick a different dish for the alternative'); break; }
+      if (ci === 0) { if (rid) s.alt = rid; else delete s.alt; } else e.alt = rid || '';
+      break;
+    }
+    case 'altmain': {
+      const [si, ci] = arg.split('|').map(Number), s = ui.plan.slots[si]; if (!s) return;
+      if (ci === 0) {
+        const alt = s.alt; if (!alt) return;
+        const prev = s.kind === 'recipe' || s.kind === 'leftover' ? s.recipeId : '';
+        ui.plan = swap(ui.plan, si, alt); ui.alt[si] = false;
+        const ns = ui.plan.slots[si]; if (prev) ns.alt = prev; else delete ns.alt;
+      } else { const e = s.extra[ci - 1]; if (!e.alt) return; const prev = e.recipeId; e.recipeId = e.alt; e.alt = prev; e.portion = 1; e.gen = false; delete e.left; }
+      toast('Alternative is now the main dish. Shopping list and nutrition updated');
+      break;
+    }
+    case 'idea': {
+      const r = engineRecipes().find(x => x.id === arg); if (!r) return;
+      const si = ui.plan.slots.findIndex((s, i) => MEALS[i % 3] === r.meal && s && s.kind === 'recipe' && !s.request && !s.cookDouble);
+      if (si < 0) { toast('No free slot for this meal type'); return; }
+      ui.plan = swapMeal(ui.plan, si, arg); toast(`Swapped into ${wdName(Math.floor(si / 3))} ${MEAL_NAME[r.meal].toLowerCase()}`); break;
+    }
+    case 'copy-list': {
+      const text = groceryText(ui.S);
+      const fallback = () => { ui.showText = text; render(); };
+      try { navigator.clipboard.writeText(text).then(() => toast('Shopping list copied'), fallback); } catch (e) { fallback(); }
+      return;
+    }
+    default: libAct(a, arg);
+  }
+  render();
+}
+
+$app.addEventListener('click', e => { const b = e.target.closest('[data-action]'); if (b) act(b.dataset.action, b.dataset.arg); });
+$app.addEventListener('input', e => {
+  const t = e.target, f = t.dataset.f; if (!f) return;
+  const i = +t.dataset.i;
+  if (f === 'name') state.members[i].name = t.value;
+  else if (f === 'likes' || f === 'dislikes') { state.members[i][f] = t.value; const m = document.getElementById('meter'); if (m) m.innerHTML = meterHtml(); }
+  else if (f === 'hh') { state.hhName = t.value; state.example = false; }
+  else if (f === 'stockqty') state.stock[i].qty = Math.max(0, Number(t.value) || 0);
+  save();
+});
+$app.addEventListener('change', e => {
+  const t = e.target, f = t.dataset.f;
+  if (t.id === 'lib-file') { libImportFile(t.files && t.files[0]); return; }
+  if (f === 'ncourses') { act('ncourses', t.dataset.i + '|' + t.value); return; }
+  if (f === 'course') { act('setcourse', `${t.dataset.i}|${t.dataset.c}|${t.value}`); return; }
+  if (f === 'portion') { act('setportion', `${t.dataset.i}|${t.dataset.c}|${t.value}`); return; }
+  if (f === 'calt') { act('setalt', `${t.dataset.i}|${t.dataset.c}|${t.value}`); return; }
+  if (!f) return;
+  if (f === 'start' && t.value) { state.start = t.value; save(); }
+  if (f === 'batch') { state.batch = t.checked; save(); }
+  if (f === 'chk') { ui.checked[t.dataset.k] = t.checked; save(); if (ui.shopView !== 'all') render(); }
+  if (f === 'name' || f === 'hh') render();
+});
+
+// ===== App part 3: dashboard-style results (day strip, meal cards, shopping tabs, bottom navigation) =====
+function todayIdx() {
+  const t = new Date(), a = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  const [y, m, d] = state.start.split('-').map(Number);
+  const diff = Math.round((a - new Date(y, m - 1, d)) / 864e5);
+  return diff >= 0 && diff < 7 ? diff : 0;
+}
+const isToday = i => iso(dayDate(i)) === iso(new Date());
+// Optional: paste direct image links here, e.g. PHOTO_URLS = { b1: 'https://images.pexels.com/photos/.../idli.jpeg' }.
+// A link wins over images/<id>.jpg. If neither loads, the icon stays.
+const PHOTO_URLS = {};
+const TINT = { b: 'var(--m3)', l: 'var(--m2)', d: 'var(--m0)' };
+const scaledF = es => householdFactor(es.members) * (es.scale || 1);
+
+// ---------- courses: number of courses, one primary dish per course, optional alternative ----------
+const suit = (r, es) => { const c = ui._suit || (ui._suit = {}); if (!(r.id in c)) c[r.id] = validFor(r, es.members); return c[r.id]; };
+function recipeOptions(sel, es, blank) {
+  const opt = r => `<option value="${esc(r.id)}" ${r.id === sel ? 'selected' : ''}>${esc(r.name)}${suit(r, es).ok ? '' : ' (not suitable for everyone)'}</option>`;
+  const cats = DISH_CATS.concat(RECIPES.some(r => !CAT_LBL[r.cat]) ? [['', 'Other dishes']] : []);
+  const group = ([c, l]) => { const list = RECIPES.filter(r => (CAT_LBL[r.cat] ? r.cat : '') === c).sort((x, y) => x.name.localeCompare(y.name)); return list.length ? `<optgroup label="${esc(l)}">${list.map(opt).join('')}</optgroup>` : ''; };
+  return `${blank ? `<option value="" ${sel ? '' : 'selected'}>${esc(blank)}</option>` : ''}${cats.map(group).join('')}`;
+}
+const PORTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+function coursePanel(i, s, es) {
+  if (!s || s.kind === 'skip') return '';
+  const extra = s.extra || [], n = 1 + extra.length;
+  const warn = rid => { const r = recipeById(rid); if (!r) return ''; const v = suit(r, es); return v.ok ? '' : `<div class="cp-warn">${ic('alert')}<span>Check before using: ${esc(v.reasons.slice(0, 3).join('; '))}</span></div>`; };
+  const course = (c, pid, aid, por) => {
+    const fixed = c === 0 && s.kind === 'fridge';
+    const primary = fixed
+      ? `<div class="cp-fixed"><b>${esc(s.name)}</b> <span class="tag good">From your fridge</span></div>`
+      : `<select data-f="course" data-i="${i}" data-c="${c}" data-fk="c:${i}:${c}" aria-label="Course ${c + 1} dish">${recipeOptions(pid, es, c === 0 && s.kind !== 'none' ? '' : 'Choose a dish...')}</select>`;
+    const por1 = por > 0 ? por : 1, plist = PORTIONS.includes(por1) ? PORTIONS : PORTIONS.concat([por1]).sort((x, y) => x - y);
+    const portion = fixed || !pid ? '' : `<label class="cp-por"><span>Portion</span><select data-f="portion" data-i="${i}" data-c="${c}" data-fk="p:${i}:${c}" aria-label="Portion of course ${c + 1}">${plist.map(v => `<option value="${v}" ${v === por1 ? 'selected' : ''}>${portionText(v)}${v === 1 ? ' (standard)' : ''}</option>`).join('')}</select></label>`;
+    const canAlt = fixed || pid;
+    return `<div class="cp-course"><div class="cp-lab">Course ${c + 1}</div><div class="cp-main">${primary}${portion}</div>${fixed ? '' : warn(pid)}
+      <div class="cp-alt"><div class="cp-lab alt"><span class="tag">Alternative</span> optional, not counted in the totals</div>
+        <div class="cp-altrow"><select data-f="calt" data-i="${i}" data-c="${c}" data-fk="a:${i}:${c}" aria-label="Alternative for course ${c + 1}" ${canAlt ? '' : 'disabled'}>${recipeOptions(aid, es, 'No alternative')}</select>${aid ? `<button class="btn ghost small-btn" ${A('altmain', i + '|' + c)}>${ic('swap')} Use as main</button>` : ''}</div>${warn(aid)}</div></div>`;
+  };
+  const rows = [course(0, s.recipeId || '', s.alt || '', s.portion)].concat(extra.map((e, k) => course(k + 1, e.recipeId || '', e.alt || '', e.portion)));
+  return `<div class="cpanel"><label class="cp-n"><span class="lab">Number of Courses</span><select data-f="ncourses" data-i="${i}" data-fk="nc:${i}">${[1, 2, 3, 4, 5].map(k => `<option value="${k}" ${k === n ? 'selected' : ''}>${k} ${k === 1 ? 'course' : 'courses'}</option>`).join('')}</select></label>${rows.join('')}</div>`;
+}
+
+// ---------- one meal as a card ----------
+function mealCard(i, es) {
+  const s = ui.plan.slots[i], meal = MEALS[i % 3], kind = MEAL_NAME[meal], day = Math.floor(i / 3);
+  const panel = coursePanel(i, s, es);
+  const simple = (icon, title, sub) => `<article class="mcard"><div class="mrow"><div class="mthumb" style="background:${TINT[meal]}" aria-hidden="true">${icon}</div><div class="mbody"><div class="mname" style="cursor:default">${title}</div><div class="mkind">${kind}</div>${sub ? `<div class="mtags">${sub}</div>` : ''}</div></div>${panel}</article>`;
+  if (!s || s.kind === 'skip') return simple('🍽️', 'Eating out', '');
+  if (s.kind === 'none') return simple('⚠️', s.removed ? 'Choose a dish' : 'No meal idea fits', s.removed ? '<span class="tag warn">That dish was removed from your dish list</span>' : '<span class="tag warn">Pick dishes below, or loosen a dislike or health need</span>');
+  if (s.kind === 'fridge') return simple('🥡', esc(s.name), '<span class="tag good">From your fridge</span> <span class="tag warn">Check it suits everyone</span>');
+  const dishes = slotDishes(s), r = dishes[0].r, open = !!ui.open[i], done = !!ui.done[i];
+  const kcal = dishesNutr(dishes).kcal, mins = Math.max(...dishes.map(d => d.r.time));
+  const tags = r.cuisine && r.cuisine !== 'Other' ? [`<span class="tag">${esc(CUISINE_LBL[r.cuisine] || r.cuisine)}</span>`] : [];
+  if (s.request) tags.push(`<span class="tag" style="background:var(--accent);color:var(--on-accent);border-color:var(--ink)">Your request</span>`);
+  if (s.kind === 'leftover') tags.push(`<span class="tag warn">Leftovers from ${esc(wdName(s.fromDay))}</span>`);
+  if (s.cookDouble) tags.push(`<span class="tag warn">Double batch for ${esc(wdName(day + 1))} lunch</span>`);
+  if (s.repeated) tags.push(`<span class="tag bad">Repeat</span>`);
+  if (dishes.length > 1) tags.push(`<span class="tag good">${dishes.length} courses</span>`);
+  groupsOf(dishes).forEach(g => tags.push(`<span class="tag good">${GROUP_LBL[g]}</span>`));
+  const more = dishes.slice(1).map(d => `<div class="mmore">+ ${esc(d.r.name)}</div>`).join('');
+  return `<article class="mcard ${open ? 'open' : ''}"><div class="mrow">
+      <button class="mthumb" style="background:${TINT[meal]}" ${A('open', i)} aria-expanded="${open}" aria-label="Details for ${esc(r.name)}">${ill(r.id) || r.icon}<img class="ph" src="${esc(PHOTO_URLS[r.id] || r.photo || 'images/' + r.id + '.jpg')}" alt="" loading="lazy"></button>
+      <div class="mbody"><div class="mtop"><button class="mname" ${A('open', i)}>${s.kind === 'leftover' ? 'Leftover ' : ''}${esc(r.name)}</button>
+        <span class="mact"><button class="icon-btn" ${A('swapopen', i)} aria-label="See other ideas for this meal">${ic('swap')}</button><button class="icon-btn done" ${A('done', i)} aria-pressed="${done}" aria-label="${done ? 'Marked as cooked' : 'Mark as cooked'}">${ic('check')}</button></span></div>
+        ${more}<div class="mkind">${kind}</div><div class="mtags">${tags.join('')}</div>
+        <div class="mmeta">${mins} MIN &nbsp;·&nbsp; ${Math.round(kcal)} KCAL</div></div></div>
+    ${panel}${open ? mealDetail(i, s, r, es, scaledF(es)) : ''}</article>`;
+}
+
+// ---------- plan: day view and whole-week view ----------
+function dayView(es, S) {
+  const d = ui.day;
+  const month = dayDate(d).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }).toUpperCase();
+  const pills = [0, 1, 2, 3, 4, 5, 6].map(i => `<button class="dpill" ${A('day', i)} aria-pressed="${i === d}" aria-label="${esc(dayLabel(i, true))}"><span class="dw">${esc(dayDate(i).toLocaleDateString(undefined, { weekday: 'short' }))}</span><span class="dn">${dayDate(i).getDate()}</span><span class="dot ${isToday(i) ? 'on' : ''}"></span></button>`).join('');
+  const t = S.house[d];
+  const stats = t.n ? `<div class="stats" aria-label="Day total for one adult"><div class="stat">${t.kcal}<small>kcal</small></div><div class="stat">${t.protein} g<small>protein</small></div><div class="stat">${t.carbs} g<small>carbs</small></div><div class="stat">${t.fat} g<small>fat</small></div></div><p class="fine" style="margin-top:-8px">Day total for one adult serving.</p>` : '';
+  return `<div class="eyebrow">${esc(month)}</div>
+    <div class="strip"><button class="icon-btn flat" ${A('day-step', -1)} ${d === 0 ? 'disabled' : ''} aria-label="Previous day">${ic('left')}</button><div class="pills" role="group" aria-label="Choose a day">${pills}</div><button class="icon-btn flat" ${A('day-step', 1)} ${d === 6 ? 'disabled' : ''} aria-label="Next day">${ic('right')}</button></div>
+    <div class="sec-head"><span class="sec-ic">${ic('leaf')}</span>MEALS</div>
+    <button class="btn ghost wide big" ${A('tab', 'shop')}>${ic('basket')} Shopping list</button>
+    <div class="mlist">${MEALS.map((m, k) => mealCard(d * 3 + k, es)).join('')}</div>
+    <p class="fine">The shopping list and nutrition use the main dish of every course. An alternative is only counted after you choose "Use as main".</p>${stats}`;
+}
+function weekView(es, S) {
+  const f = scaledF(es);
+  const v = S.variety, left = S.leftovers.planned.length + S.leftovers.fridge.length;
+  const line = `<div class="summary-line"><span class="tag good">${v.meals} meals planned</span><span class="tag good">${v.distinct} different dishes</span><span class="tag good">${Object.keys(v.proteins).length} kinds of main protein</span>${left ? `<span class="tag good">${left} leftover ${left === 1 ? 'meal' : 'meals'}</span>` : ''}</div>`;
+  const days = [0, 1, 2, 3, 4, 5, 6].map(d => `<article class="day"><header><h3>${esc(dayLabel(d, true))}</h3><span class="fine">${S.house[d].n ? `about ${S.house[d].kcal} kcal per adult` : ''}</span></header>${MEALS.map((m, k) => mealRow(d * 3 + k, es, S, f)).join('')}</article>`).join('');
+  return `${line}<div class="days">${days}</div>`;
+}
+function planTab(es, S) {
+  const warn = ui.plan.warnings.map(w => `<div class="notice">${ic('alert')}<div>${esc(w)}</div></div>`).join('');
+  const safe = `<div class="notice ok">${ic('check')}<div><b>Every meal was checked against everyone's needs.</b><br>${es.members.map(m => `${esc(m.name)}: ${esc(needsLine(m))}`).join('<br>')}</div></div>`;
+  const sw = `<div class="switch" role="group" aria-label="Plan view"><button ${A('range', 'day')} aria-pressed="${ui.range !== 'week'}">Day</button><button ${A('range', 'week')} aria-pressed="${ui.range === 'week'}">Whole week</button></div>`;
+  return `${warn}${sw}${ui.range === 'week' ? weekView(es, S) : dayView(es, S)}${safe}`;
+}
+
+// ---------- shopping list ----------
+function checkRow(it, key, sub, fk, covered) {
+  return `<label class="${covered ? 'cov' : ''}"><input type="checkbox" data-f="chk" data-k="${esc(key)}" data-fk="${esc(fk)}" ${covered || ui.checked[key] ? 'checked' : ''} ${covered ? 'disabled' : ''}><span class="nm">${esc(it.name)}<span class="st">${sub}</span></span>${covered ? '<span class="tag good">In stock</span>' : ''}</label>`;
+}
+function shopTab(es, S) {
+  const cf = state.cookFor || es.members.length;
+  const head = `<section class="card soft"><div class="row" style="align-items:center"><div style="flex:1 1 240px"><h2>${S.toBuy} ${S.toBuy === 1 ? 'item' : 'items'} to buy</h2>
+      <div class="summary-line" style="margin-top:8px"><span class="tag warn">${S.toBuy} missing</span><span class="tag good">${S.covered} in stock</span></div></div>
+      <button class="btn" ${A('copy-list')}>${ic('copy')} Copy list</button></div>
+    <div class="row" style="align-items:center"><span class="lab">Cooking for</span><div class="stepper"><button ${A('cf-')} aria-label="Fewer people">${ic('minus')}</button><span class="val" aria-live="polite">${cf}</span><button ${A('cf+')} aria-label="More people">${ic('plus')}</button></div><span class="muted">${cf === 1 ? 'person' : 'people'}</span></div></section>
+    <div class="switch" role="group" aria-label="Shopping list view"><button ${A('shopview', 'meal')} aria-pressed="${ui.shopView !== 'all'}">By meal</button><button ${A('shopview', 'all')} aria-pressed="${ui.shopView === 'all'}">All items</button></div>`;
+  const copy = ui.showText ? `<section class="card"><h3>Copy this list</h3><textarea id="copy-box" readonly rows="10" style="width:100%;border:2px solid var(--ctl);border-radius:14px;padding:12px;background:var(--surface)">${esc(ui.showText)}</textarea></section>` : '';
+  let body = '';
+  if (ui.shopView === 'all') {
+    body = S.grocery.map(g => {
+      const buy = g.items.filter(x => x.buy > 0);
+      if (!buy.length) return '';
+      return `<section class="card"><h3>${esc(g.cat)}</h3><div class="groc">${buy.map(it => checkRow(it, it.name + '|' + it.unit, `Buy ${buyText(it)}${it.fromStock ? `. You have ${haveText(it)}` : ''}`, `chk:${it.name}|${it.unit}:all`, false)).join('')}</div></section>`;
+    }).join('') || '<div class="empty">Nothing to buy. Your stock covers the plan.</div>';
+    const have = S.grocery.flatMap(g => g.items.filter(x => x.buy === 0));
+    if (have.length) body += `<section class="card"><h3>Already covered by your stock</h3><div class="groc have">${have.map(it => checkRow(it, it.name + '|' + it.unit, `Need ${qtyText(it.total, it.unit, it.name)}`, `chk:${it.name}|${it.unit}:have`, true)).join('')}</div></section>`;
+  } else {
+    const byKey = {}; S.grocery.forEach(g => g.items.forEach(it => { byKey[it.name + '|' + it.unit] = it; }));
+    const f = scaledF(es);
+    ui.plan.slots.forEach((s, i) => {
+      if (!s) return;
+      const multi = slotDishes(s).length > 1;
+      slotDishes(s).forEach(d => {
+        if (d.kind !== 'recipe') return;
+        const r = d.r, mult = d.mult, fkid = `${i}-${d.course}`;
+        const rows = r.ingr.filter(g => g.cat !== 'S').map(g => ({ g, it: byKey[g.name + '|' + g.unit] })).filter(x => x.it);
+        const missing = rows.filter(x => x.it.buy > 0).length;
+        body += `<section class="card"><div class="row" style="align-items:center;flex-wrap:nowrap"><span class="meal-ic" style="background:${TINT[MEALS[i % 3]]};border-radius:14px;padding:6px 10px">${ill(r.id) || r.icon}</span><div style="min-width:0"><h3 style="font-size:20px">${esc(r.name)}</h3><span class="muted">${esc(wdName(Math.floor(i / 3)))} ${MEAL_NAME[MEALS[i % 3]].toLowerCase()}${multi ? `, course ${d.course}` : ''}${d.dbl ? ', double batch' : ''}</span></div></div>
+          <div><span class="tag ${missing ? 'warn' : 'good'}">${missing} of ${rows.length} items to buy</span></div>
+          <div class="groc">${rows.map(x => checkRow(x.it, x.it.name + '|' + x.it.unit, `Needs ${qtyText(x.g.qty * f * mult, x.g.unit, x.g.name)}`, `chk:${x.it.name}|${x.it.unit}:${fkid}`, x.it.buy === 0)).join('')}</div></section>`;
+      });
+    });
+    if (!body) body = '<div class="empty">No cooked meals in this plan yet.</div>';
+  }
+  return `${head}${copy}${body}<p class="fine">Salt, pepper, cooking oil and basic spices are assumed to be at home. Amounts are rounded up to practical sizes.</p>`;
+}
+
+// ---------- results shell with bottom navigation ----------
+function bottomNav() {
+  const items = [['plan', 'Plan', 'cal'], ['shop', 'Shopping', 'basket'], ['nutr', 'Nutrition', 'heart'], ['left', 'Leftovers', 'leaf'], ['recipes', 'Dishes', 'book']];
+  return `<nav class="bottom-nav" aria-label="Sections"><div class="in">${items.map(([k, l, i]) => k === 'recipes' ? `<button ${A('recipes')}>${ic(i)}${l}</button>` : `<button ${A('tab', k)} ${ui.tab === k ? 'aria-current="page"' : ''}>${ic(i)}${l}</button>`).join('')}</div></nav>`;
+}
+// ---------- weeks: switch between planned weeks, or plan the next one ----------
+function openWeek(key) {
+  const w = weeks[key]; if (!w) return;
+  commitWeek();
+  WK_FIELDS.forEach(k => { if (w[k] !== undefined) state[k] = w[k]; });
+  state.wkKey = key; ui.plan = w.plan; ui.checked = w.checked || {}; ui.done = w.done || {};
+  ui.open = {}; ui.alt = {}; ui.showText = null; ui.day = todayIdx(); ui.range = 'day'; ui.tab = 'plan'; ui.view = 'results';
+  window.scrollTo(0, 0);
+}
+function planNext() {
+  const S = ui.S || summarize(ui.plan, engineState());
+  const carry = S.unusedStock.map(s => ({ name: s.name, qty: s.qty, unit: s.unit, soon: s.soon }));
+  commitWeek();
+  const nk = iso(dayDate(7));
+  if (weeks[nk]) { openWeek(nk); toast('Showing next week'); return; }
+  state.start = nk; state.stock = carry; state.fridge = []; state.requests = []; state.skips = []; state.seed = 1; state.wkKey = null;
+  regenerate(); window.scrollTo(0, 0);
+  toast(carry.length ? 'Next week planned. Unused stock carried over' : 'Next week planned');
+}
+const wkShort = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }); };
+function weekBar() {
+  const keys = Object.keys(weeks).sort(), idx = keys.indexOf(state.start), prev = keys[idx - 1], next = keys[idx + 1];
+  const chips = keys.length > 1 ? `<div class="wk-chips" role="group" aria-label="Choose a week">${keys.map(k => `<button ${A('week', k)} aria-pressed="${k === state.start}">${esc(wkShort(k))}</button>`).join('')}</div>` : '';
+  return `<div class="weekbar"><button class="icon-btn flat" ${prev ? A('week', prev) : 'disabled'} aria-label="Previous week">${ic('left')}</button><div class="wk-title">Week of ${esc(dayLabel(0, true))}</div><button class="icon-btn flat" ${next ? A('week', next) : 'disabled'} aria-label="Next week">${ic('right')}</button></div>${chips}
+    ${next ? '' : `<button class="btn ghost wide" ${A('next-week')}>${ic('cal')} Plan next week</button>`}`;
+}
+function renderResults() {
+  const es = engineState(), S = summarize(ui.plan, es);
+  ui.S = S;
+  const body = ui.tab === 'plan' ? planTab(es, S) : ui.tab === 'shop' ? shopTab(es, S) : ui.tab === 'nutr' ? nutritionTab(es, S) : leftoversTab(es, S);
+  return `<section class="dash-top"><div><h1>${esc(state.hhName)}</h1></div>
+    <div class="row"><button class="btn ghost small-btn" ${A('goto', 1)}>Edit household</button><button class="btn small-btn" ${A('newseed')}>${ic('refresh')} New ideas</button></div></section>
+    ${weekBar()}
+    ${body}${bottomNav()}`;
+}
+
+// A real photo (images/<recipe id>.jpg) covers the icon when the file exists; if it is missing the icon stays.
+$app.addEventListener('error', e => { if (e.target && e.target.classList && e.target.classList.contains('ph')) e.target.remove(); }, true);
+
+// ===== App part 4: dish library (add, edit, copy, delete, import and export) =====
+const ALLERGEN_LBL = { gluten: 'Gluten (wheat)', dairy: 'Milk and dairy', egg: 'Egg', peanut: 'Peanuts', treenut: 'Tree nuts', soy: 'Soy', fish: 'Fish', shellfish: 'Shellfish', sesame: 'Sesame', pork: 'Pork', beef: 'Beef', chicken: 'Chicken', lamb: 'Lamb or mutton', honey: 'Honey' };
+const SOFT_LBL = ['Firm, needs chewing', 'Fairly soft', 'Very soft'];
+const UNIT_OPTS = [['g', 'grams (g)'], ['ml', 'millilitres (ml)'], ['pc', 'pieces']];
+const CAT_OPTS = [['P', 'Fruit and vegetables'], ['M', 'Meat, fish, tofu'], ['D', 'Dairy and eggs'], ['G', 'Tins, grains, pantry'], ['B', 'Bakery'], ['S', 'Already at home (not on the list)']];
+const blankIng = () => ({ name: '', qty: '', unit: 'g', cat: 'P' });
+
+function toDraft(r) {
+  const d = JSON.parse(JSON.stringify(r));
+  d.stepsText = r.steps.join('\n');
+  if (!d.ingr.length) d.ingr = [blankIng()];
+  return d;
+}
+function blankDraft() {
+  return { id: null, icon: '🍽️', name: '', cat: ui.libCat && ui.libCat !== 'all' ? ui.libCat : 'veg', cuisine: 'Other', allergens: [], soft: 0, spicy: false, keeps: false, time: 30, groups: [],
+    nutr: { kcal: 400, protein: 15, carbs: 50, fat: 12, fiber: 5, sugar: 4, sodium: 400 }, ingr: [blankIng()], stepsText: '', variation: '', photo: '', art: '' };
+}
+
+// ---------- list ----------
+function libList() {
+  const q = (ui.libQ || '').trim().toLowerCase(), m = ui.libCat || 'all';
+  const used = new Set(); if (ui.plan) ui.plan.slots.forEach(s => slotDishes(s).forEach(d => used.add(d.r.id)));
+  const rows = RECIPES.filter(r => (m === 'all' || r.cat === m) && (!q || (r.name + ' ' + r.cuisine + ' ' + r.ingr.map(i => i.name).join(' ')).toLowerCase().includes(q)))
+    .sort((a, b) => DISH_CATS.findIndex(c => c[0] === a.cat) - DISH_CATS.findIndex(c => c[0] === b.cat) || a.name.localeCompare(b.name));
+  if (!rows.length) return `<div class="empty">${RECIPES.length ? 'No dishes match. Try another word or filter.' : 'Your dish list is empty. Add a dish, or add back the starter dishes below.'}</div>`;
+  return rows.map(r => {
+    const ask = ui.confirmDel === r.id, inPlan = used.has(r.id);
+    const acts = ask
+      ? `<span class="muted">Delete this dish?</span><button class="btn danger small-btn" ${A('lib-del-yes', r.id)}>${ic('trash')} Yes, delete</button><button class="btn ghost small-btn" ${A('lib-del-no')}>Keep it</button>`
+      : `<button class="btn ghost small-btn" ${A('lib-edit', r.id)}>${ic('edit')} Edit</button><button class="btn ghost small-btn" ${A('lib-dup', r.id)}>${ic('dup')} Copy</button><button class="icon-btn" ${A('lib-del', r.id)} aria-label="Delete ${esc(r.name)}">${ic('trash')}</button>`;
+    return `<article class="lrow"><div class="mthumb" style="background:${TINT.l}" aria-hidden="true">${ill(r.id) || r.icon}</div>
+      <div class="lbody"><div class="mname" style="cursor:default">${esc(r.name)}</div>
+        <div class="mtags"><span class="tag">${esc(CAT_LBL[r.cat] || 'Other')}</span>${r.cuisine && r.cuisine !== 'Other' ? `<span class="tag">${esc(CUISINE_LBL[r.cuisine] || r.cuisine)}</span>` : ''}<span class="tag">${r.nutr.kcal} kcal</span><span class="tag">${r.time} min</span>${inPlan ? '<span class="tag good">In this week</span>' : ''}</div>
+        ${ask && inPlan ? '<p class="fine">This dish is in your plan. That course will ask you to choose another dish.</p>' : ''}
+        <div class="lact">${acts}</div></div></article>`;
+  }).join('');
+}
+function renderLibrary() {
+  if (ui.edit) return editorView();
+  const m = ui.libCat || 'all';
+  const filters = [['all', 'All', RECIPES.length]].concat(DISH_CATS.map(([v, l]) => [v, l, RECIPES.filter(r => r.cat === v).length])).map(([v, l, n]) => `<button class="chip" ${A('lib-filter', v)} aria-pressed="${m === v}">${esc(l)} (${n})</button>`).join('');
+  const out = ui.libText ? `<section class="card"><h3>Your dishes as text</h3><p class="fine">A file download was started. If nothing downloaded, copy this text and save it as a .json file. You can bring it back with Import.</p><textarea id="copy-box" readonly rows="8" style="width:100%;border:2px solid var(--ctl);border-radius:14px;padding:12px;background:var(--surface)">${esc(ui.libText)}</textarea><div><button class="btn ghost small-btn" ${A('lib-hide')}>Hide</button></div></section>` : '';
+  return `<section class="dash-top"><div><h1>Dish library</h1><p class="muted">${RECIPES.length} individual ${RECIPES.length === 1 ? 'dish' : 'dishes'}, each listed once. Every course dropdown, shopping list and nutrition total uses this list.</p></div>
+      <div class="row"><button class="btn ghost small-btn" ${A('lib-back')}>${ic('left')} Back</button><button class="btn small-btn" ${A('lib-add')}>${ic('plus')} Add dish</button></div></section>
+    <div class="field"><label for="lib-q">Search dishes</label><input type="text" id="lib-q" value="${esc(ui.libQ || '')}" placeholder="Name or ingredient" autocomplete="off"></div>
+    <div class="chips" role="group" aria-label="Filter by category">${filters}</div>
+    <div class="llist" id="lib-list">${libList()}</div>
+    <section class="card soft"><h3>Back up and restore</h3>
+      <p class="fine">Dishes are saved in this browser. Export a copy to keep them safe or move them to another device.</p>
+      <div class="row"><button class="btn ghost small-btn" ${A('lib-export')}>${ic('copy')} Export dishes</button><button class="btn ghost small-btn" ${A('lib-import')}>${ic('plus')} Import dishes</button><button class="btn ghost small-btn" ${A('lib-restore')}>${ic('refresh')} Add back starter dishes</button></div>
+      <input type="file" id="lib-file" accept=".json,application/json" hidden></section>${out}`;
+}
+
+// ---------- editor ----------
+function dietReadout(d) {
+  const probe = v => ({ allergies: [], diets: [v], health: [], age: 30, dislikes: '' });
+  return DIET_OPTS.map(([v, l]) => { const ok = conflicts(d, probe(v)).length === 0; return `<span class="tag ${ok ? 'good' : 'bad'}">${l}: ${ok ? 'yes' : 'no'}</span>`; }).join('');
+}
+function editorView() {
+  const d = ui.edit, isNew = !ui.editId;
+  const chips = (opts, list, act) => `<div class="chips">${opts.map(([v, l]) => `<button class="chip" ${A(act, v)} aria-pressed="${list.includes(v)}">${l}</button>`).join('')}</div>`;
+  const cuisines = [...new Set(['South Indian', 'North Indian', 'Mediterranean', ...RECIPES.map(r => r.cuisine)])];
+  const err = (ui.editErr && ui.editErr.length) ? `<div class="notice" role="alert">${ic('alert')}<div>${ui.editErr.map(esc).join('<br>')}</div></div>` : '';
+  const ing = d.ingr.map((g, k) => `<li class="ing-row">
+      <input type="text" data-rc="ig:${k}:name" list="ing-names" value="${esc(g.name)}" placeholder="Ingredient" aria-label="Ingredient ${k + 1} name">
+      <input type="number" min="0" step="any" data-rc="ig:${k}:qty" value="${esc(g.qty)}" placeholder="Amount" aria-label="Ingredient ${k + 1} amount per adult">
+      <select data-rc="ig:${k}:unit" aria-label="Unit">${UNIT_OPTS.map(([v, l]) => `<option value="${v}" ${g.unit === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <select data-rc="ig:${k}:cat" aria-label="Shopping group">${CAT_OPTS.map(([v, l]) => `<option value="${v}" ${g.cat === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <button class="icon-btn" ${A('ing-rm', k)} aria-label="Remove ingredient ${k + 1}">${ic('trash')}</button></li>`).join('');
+  return `<section class="dash-top"><div><h1>${isNew ? 'Add a dish' : 'Edit dish'}</h1><p class="muted">One dish, not a whole meal. Quantities are for one standard adult serving. The planner scales them for your household and for the portion chosen in each course.</p></div>
+      <div class="row"><button class="btn ghost small-btn" ${A('lib-cancel')}>Cancel</button><button class="btn small-btn" ${A('lib-save')}>${ic('check')} Save dish</button></div></section>
+    ${err}
+    <section class="card"><h2>The basics</h2>
+      <div class="row"><div class="field" style="flex:2 1 260px"><label for="rc-name">Dish name</label><input type="text" id="rc-name" data-rc="name" value="${esc(d.name)}" placeholder="e.g. Jeera rice"></div>
+        <div class="field"><label for="rc-cat">Category</label><select id="rc-cat" data-rc="cat">${DISH_CATS.map(([v, l]) => `<option value="${v}" ${d.cat === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div></div>
+      <div class="row"><div class="field"><label for="rc-cuisine">Cuisine</label><input type="text" id="rc-cuisine" data-rc="cuisine" list="cuisine-list" value="${esc(d.cuisine)}"><datalist id="cuisine-list">${cuisines.map(c => `<option value="${esc(c)}">`).join('')}</datalist></div>
+        <div class="field"><label for="rc-time">Time to cook (minutes)</label><input type="number" id="rc-time" min="1" data-rc="time" value="${esc(d.time)}"></div>
+        <div class="field"><label for="rc-soft">Texture</label><select id="rc-soft" data-rc="soft">${SOFT_LBL.map((l, k) => `<option value="${k}" ${String(d.soft) === String(k) ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
+      <div class="chips"><button class="chip" ${A('rc-flag', 'spicy')} aria-pressed="${!!d.spicy}">Spicy</button><button class="chip" ${A('rc-flag', 'keeps')} aria-pressed="${!!d.keeps}">Keeps well (good for leftovers)</button></div>
+    </section>
+    <section class="card"><h2>Dietary information</h2>
+      <div><div class="lab">This dish contains</div><p class="fine">Tick everything it contains. The planner uses this to keep allergies, vegetarian, vegan, halal and other needs safe.</p>${chips(Object.keys(ALLERGEN_LBL).map(a => [a, ALLERGEN_LBL[a]]), d.allergens, 'rc-al')}</div>
+      <div><div class="lab">Food groups it provides</div>${chips(Object.entries(GROUP_LBL), d.groups, 'rc-gr')}</div>
+      <div><div class="lab">This dish is suitable for</div><div class="chips" style="margin-top:8px">${dietReadout(d)}</div></div>
+    </section>
+    <section class="card"><h2>Ingredients</h2><p class="fine">Amounts are for one standard adult serving. Choose "Already at home" for salt, oil and spices you never buy.</p>
+      <ul class="list">${ing}</ul><datalist id="ing-names">${ingredientNames().map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+      <div><button class="btn ghost" ${A('ing-add')}>${ic('plus')} Add ingredient</button></div></section>
+    <section class="card"><h2>Nutrition per adult serving</h2>
+      <div class="nutr-grid">${NUTR_FIELDS.map(([k, l, u]) => `<div class="field"><label for="rc-n-${k}">${l} (${u})</label><input type="number" id="rc-n-${k}" min="0" step="any" data-rc="n:${k}" value="${esc(d.nutr[k])}"></div>`).join('')}</div></section>
+    <section class="card"><h2>Method and notes</h2>
+      <div class="field"><label for="rc-steps">Method (one step per line)</label><textarea id="rc-steps" data-rc="stepsText" rows="6" class="ta">${esc(d.stepsText)}</textarea></div>
+      <div class="field"><label for="rc-var">Notes or "try instead"</label><textarea id="rc-var" data-rc="variation" rows="3" class="ta">${esc(d.variation)}</textarea></div>
+      <div class="field"><label for="rc-photo">Photo link (optional)</label><input type="text" id="rc-photo" data-rc="photo" value="${esc(d.photo)}" placeholder="https://... or images/my-dish.jpg"></div></section>
+    <div class="actions"><button class="btn ghost big" ${A('lib-cancel')}>Cancel</button><button class="btn big" ${A('lib-save')}>${ic('check')} Save dish</button></div>`;
+}
+function saveDraft() {
+  const d = ui.edit, errs = [];
+  const name = d.name.trim();
+  if (!name) errs.push('Give the dish a name.');
+  const ingr = d.ingr.filter(x => String(x.name).trim());
+  if (!ingr.length) errs.push('Add at least one ingredient.');
+  if (name && RECIPES.some(r => r.id !== ui.editId && r.name.trim().toLowerCase() === name.toLowerCase())) errs.push('You already have a dish with this name. Each dish is listed once, so choose a different name or edit the existing dish.');
+  if (errs.length) { ui.editErr = errs; render(); window.scrollTo(0, 0); return; }
+  const rec = cleanRecipe({ ...d, id: ui.editId || newRecipeId(), name, steps: d.stepsText.split('\n'), ingr });
+  const k = RECIPES.findIndex(r => r.id === rec.id);
+  if (k >= 0) RECIPES[k] = rec; else RECIPES.push(rec);
+  saveRecipes(); repairPlans();
+  ui.edit = null; ui.editId = null; ui.editErr = null;
+  toast(k >= 0 ? 'Dish saved. Your plan and lists are updated' : 'Dish added. It is now in every course dropdown');
+  window.scrollTo(0, 0);
+}
+
+// ---------- actions ----------
+function libAct(a, arg) {
+  switch (a) {
+    case 'recipes': if (ui.view !== 'recipes') ui.libFrom = ui.view; ui.view = 'recipes'; ui.edit = null; ui.confirmDel = null; window.scrollTo(0, 0); break;
+    case 'lib-back': ui.view = ui.libFrom === 'wizard' || !ui.plan ? 'wizard' : 'results'; ui.edit = null; ui.libText = null; window.scrollTo(0, 0); break;
+    case 'lib-filter': ui.libCat = arg; break;
+    case 'lib-add': ui.edit = blankDraft(); ui.editId = null; ui.editErr = null; window.scrollTo(0, 0); break;
+    case 'lib-edit': { const r = recipeById(arg); if (r) { ui.edit = toDraft(r); ui.editId = r.id; ui.editErr = null; window.scrollTo(0, 0); } break; }
+    case 'lib-dup': { const r = recipeById(arg); if (r) { ui.edit = toDraft({ ...r, name: r.name + ' (copy)', art: r.art || (ART[r.id] ? r.id : '') }); ui.editId = null; ui.editErr = null; window.scrollTo(0, 0); } break; }
+    case 'lib-del': ui.confirmDel = arg; break;
+    case 'lib-del-no': ui.confirmDel = null; break;
+    case 'lib-del-yes': {
+      const k = RECIPES.findIndex(r => r.id === arg); if (k >= 0) { const nm = RECIPES[k].name; RECIPES.splice(k, 1); saveRecipes(); repairPlans(); toast(`Deleted "${nm}"`); }
+      ui.confirmDel = null; break;
+    }
+    case 'lib-cancel': ui.edit = null; ui.editId = null; ui.editErr = null; window.scrollTo(0, 0); break;
+    case 'lib-save': saveDraft(); break;
+    case 'rc-al': case 'rc-gr': { const key = a === 'rc-al' ? 'allergens' : 'groups', l = ui.edit[key], k = l.indexOf(arg); if (k < 0) l.push(arg); else l.splice(k, 1); break; }
+    case 'rc-flag': ui.edit[arg] = !ui.edit[arg]; break;
+    case 'ing-add': ui.edit.ingr.push(blankIng()); break;
+    case 'ing-rm': ui.edit.ingr.splice(+arg, 1); if (!ui.edit.ingr.length) ui.edit.ingr.push(blankIng()); break;
+    case 'lib-export': {
+      const json = JSON.stringify(RECIPES, null, 2); ui.libText = json;
+      try { const l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([json], { type: 'application/json' })); l.download = 'family-table-dishes.json'; document.body.appendChild(l); l.click(); l.remove(); } catch (e) { /* the text box below is the fallback */ }
+      break;
+    }
+    case 'lib-hide': ui.libText = null; break;
+    case 'lib-import': { const f = document.getElementById('lib-file'); if (f) f.click(); return; }
+    case 'lib-restore': {
+      const missing = STARTER_RECIPES.filter(r => !recipeById(r.id));
+      missing.forEach(r => RECIPES.push(cleanRecipe(r))); saveRecipes();
+      toast(missing.length ? `Added back ${missing.length} starter ${missing.length === 1 ? 'dish' : 'dishes'}` : 'All starter dishes are already in your list'); break;
+    }
+  }
+}
+function libImportFile(file) {
+  if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    let d; try { d = JSON.parse(String(rd.result)); } catch (e) { toast('That file is not valid JSON'); return; }
+    if (d && Array.isArray(d.recipes)) d = d.recipes;
+    if (!Array.isArray(d)) { toast('No dishes found in that file'); return; }
+    let added = 0, updated = 0;
+    d.forEach(x => {
+      if (!x || !x.name) return;
+      const r = cleanRecipe({ ...x, id: x.id || newRecipeId() }), k = RECIPES.findIndex(y => y.id === r.id);
+      if (k >= 0) { RECIPES[k] = r; updated++; } else { RECIPES.push(r); added++; }
+    });
+    saveRecipes(); repairPlans(); render(); toast(`Imported ${added} new and ${updated} updated ${added + updated === 1 ? 'dish' : 'dishes'}`);
+  };
+  rd.onerror = () => toast('Could not read that file');
+  rd.readAsText(file);
+}
+
+// Live editing of the recipe form (typing, dropdowns) and the library search box. No full re-render, so typing is never interrupted.
+$app.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'lib-q') { ui.libQ = t.value; const l = document.getElementById('lib-list'); if (l) l.innerHTML = libList(); return; }
+  const k = t.dataset && t.dataset.rc; if (!k || !ui.edit) return;
+  const d = ui.edit;
+  if (k.startsWith('n:')) d.nutr[k.slice(2)] = t.value;
+  else if (k.startsWith('ig:')) { const [, idx, fld] = k.split(':'); d.ingr[+idx][fld] = t.value; }
+  else d[k] = t.value;
+});
+// ===== Supabase live data (shared family link, no login) =====
+// Uses the public publishable key via plain REST calls. Falls back to this device's storage when offline or blocked.
+const SB_URL = 'https://jeerscukwmcawmoddoax.supabase.co';
+const SB_KEY = 'sb_publishable_JkOIq3bGF5fHrFLVFwfRNg_p19u-bcW';
+const HH_ID = 'family';
+const cloud = { status: 'connecting', applying: false, timer: null, busy: false, last: { dishes: {}, state: '', weeks: {} } };
+
+function cloudSet(s) {
+  cloud.status = s;
+  try { const el = document.getElementById('cloudtag'); if (el) { el.textContent = cloudLabel(); el.className = 'hint-tag cloud-' + s; } } catch (e) { /* ignore */ }
+}
+function cloudLabel() { return cloud.status === 'live' ? 'Live' : cloud.status === 'syncing' ? 'Saving…' : cloud.status === 'connecting' ? 'Connecting…' : 'Offline · saved on this device'; }
+
+async function sb(method, path, body, prefer) {
+  const h = { apikey: SB_KEY, 'Content-Type': 'application/json' };
+  if (prefer) h.Prefer = prefer;
+  const r = await fetch(SB_URL + '/rest/v1/' + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) });
+  if (!r.ok) throw new Error('Supabase ' + r.status);
+  return method === 'GET' ? r.json() : null;
+}
+const sbUpsert = (table, rows, conflict) => rows.length ? sb('POST', table + (conflict ? '?on_conflict=' + conflict : ''), rows, 'resolution=merge-duplicates,return=minimal') : Promise.resolve();
+
+const dishToRow = (r, i) => ({ id: r.id, cat: r.cat, name: r.name, cuisine: r.cuisine || '', icon: r.icon || '', allergens: r.allergens || [], soft: r.soft || 0, spicy: !!r.spicy, keeps: !!r.keeps, minutes: r.time || 20, food_groups: r.groups || [], nutr: r.nutr || {}, ingr: r.ingr || [], steps: r.steps || [], variation: r.variation || '', photo: r.photo || '', art: r.art || '', sort_order: i, updated_at: new Date().toISOString() });
+const rowToDish = x => cleanRecipe({ id: x.id, cat: x.cat, name: x.name, cuisine: x.cuisine, icon: x.icon, allergens: x.allergens, soft: x.soft, spicy: x.spicy, keeps: x.keeps, time: x.minutes, groups: x.food_groups, nutr: x.nutr, ingr: x.ingr, steps: x.steps, variation: x.variation, photo: x.photo, art: x.art });
+const stateJson = () => JSON.stringify(state);
+
+// Push whatever changed since the last successful sync.
+async function cloudPush() {
+  cloud.timer = null;
+  if (cloud.busy) { cloudQueue(); return; }
+  cloud.busy = true;
+  try {
+    const rows = RECIPES.map(dishToRow), cur = {};
+    const dj = rows.map(r => { const j = JSON.stringify({ ...r, updated_at: 0, sort_order: r.sort_order }); cur[r.id] = j; return j; });
+    const changed = rows.filter((r, i) => cloud.last.dishes[r.id] !== dj[i]);
+    const gone = Object.keys(cloud.last.dishes).filter(id => !(id in cur));
+    const sj = stateJson(), stateChanged = sj !== cloud.last.state;
+    const wkRows = [], wkJson = {};
+    Object.keys(weeks).forEach(k => { const j = JSON.stringify(weeks[k]); wkJson[k] = j; if (cloud.last.weeks[k] !== j) wkRows.push({ household_id: HH_ID, week_start: k, data: weeks[k], updated_at: new Date().toISOString() }); });
+    const wkGone = Object.keys(cloud.last.weeks).filter(k => !(k in wkJson));
+    if (!changed.length && !gone.length && !stateChanged && !wkRows.length && !wkGone.length) { cloudSet('live'); cloud.busy = false; return; }
+    cloudSet('syncing');
+    await sbUpsert('ft_dishes', changed, 'id');
+    for (const id of gone) await sb('DELETE', 'ft_dishes?id=eq.' + encodeURIComponent(id));
+    if (stateChanged) await sbUpsert('ft_household', [{ id: HH_ID, state: state, updated_at: new Date().toISOString() }], 'id');
+    await sbUpsert('ft_weeks', wkRows, 'household_id,week_start');
+    for (const k of wkGone) await sb('DELETE', 'ft_weeks?household_id=eq.' + HH_ID + '&week_start=eq.' + k);
+    cloud.last.dishes = cur; cloud.last.state = sj; cloud.last.weeks = wkJson;
+    cloudSet('live');
+  } catch (e) { cloudSet('offline'); }
+  cloud.busy = false;
+}
+function cloudQueue() {
+  if (cloud.applying || cloud.status === 'connecting') return;
+  clearTimeout(cloud.timer); cloud.timer = setTimeout(cloudPush, 900);
+}
+
+// Read everything from Supabase. The first run copies the starter dishes and meal ideas into the tables.
+async function cloudPull(first) {
+  if (cloud.timer || cloud.busy) return;
+  try {
+    const [dRows, iRows, hRows, wRows] = await Promise.all([
+      sb('GET', 'ft_dishes?select=*&order=sort_order'),
+      sb('GET', 'ft_meal_ideas?select=*&order=sort_order'),
+      sb('GET', 'ft_household?select=*&id=eq.' + HH_ID),
+      sb('GET', 'ft_weeks?select=*&household_id=eq.' + HH_ID)
+    ]);
+    cloud.applying = true;
+    if (!dRows.length) {
+      await sbUpsert('ft_dishes', STARTER_RECIPES.map(dishToRow), 'id');
+      cloud.last.dishes = {}; // push below records the baseline
+    } else {
+      const list = dRows.map(rowToDish);
+      RECIPES.length = 0; list.forEach(r => RECIPES.push(r)); libVer++;
+      try { localStorage.setItem(RECIPE_KEY, JSON.stringify(RECIPES)); } catch (e) { /* ignore */ }
+    }
+    if (!iRows.length) await sbUpsert('ft_meal_ideas', COMBOS.map((c, i) => ({ id: c.id, meal: c.meal, cuisine: c.cuisine, dishes: c.dishes, sort_order: i })), 'id');
+    else { COMBOS.length = 0; iRows.forEach(x => COMBOS.push({ id: x.id, meal: x.meal, cuisine: x.cuisine, dishes: x.dishes })); libVer++; }
+    if (hRows.length && hRows[0].state && Array.isArray(hRows[0].state.members) && hRows[0].state.members.length) {
+      const st = hRows[0].state; st.cur = Math.min(st.cur || 0, st.members.length - 1);
+      const w = {}; wRows.forEach(x => { w[x.week_start] = x.data; });
+      weeks = w; state = st;
+      const key = (state.wkKey && weeks[state.wkKey]) ? state.wkKey : (weeks[state.start] ? state.start : Object.keys(weeks).sort()[0]);
+      if (key && weeks[key] && Array.isArray(weeks[key].plan && weeks[key].plan.slots) && weeks[key].plan.slots.length === 21) {
+        const wk = weeks[key]; WK_FIELDS.forEach(k => { if (wk[k] !== undefined) state[k] = wk[k]; });
+        state.wkKey = key; ui.plan = wk.plan; ui.checked = wk.checked || {}; ui.done = wk.done || {};
+        if (first) { ui.day = todayIdx(); ui.view = 'results'; }
+      }
+      repairPlans();
+      cloud.last.state = stateJson(); cloud.last.weeks = {}; Object.keys(weeks).forEach(k => { cloud.last.weeks[k] = JSON.stringify(weeks[k]); });
+    } else { cloud.last.state = ''; cloud.last.weeks = {}; }
+    cloud.applying = false;
+    cloudSet('syncing');
+    if (dRows.length) { cloud.last.dishes = {}; RECIPES.map(dishToRow).forEach(r => { cloud.last.dishes[r.id] = JSON.stringify({ ...r, updated_at: 0 }); }); }
+    await cloudPush();
+    if (cloud.status !== 'offline') cloudSet('live');
+    if (first || dRows.length || hRows.length) render();
+  } catch (e) { console.log("ERR",e); cloud.applying = false; cloudSet("offline"); }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && cloud.status !== 'connecting') cloudPull(false); });
+// ===== Boot =====
+load();
+render();
+cloudPull(true).then(() => { if (cloud.status === 'connecting') cloudSet('offline'); });
+</script>
+</body>
+</html>
