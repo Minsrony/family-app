@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#fbf6ee"><title>Family Table</title></head><body><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600;700&display=swap"><style>/* Layout: one calm column. A 4-step guided setup, then a results area with four tabs.
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#c8573a"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/icons/icon-192.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>Family Table</title></head><body><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600;700&display=swap"><style>/* Layout: one calm column. A 4-step guided setup, then a results area with four tabs.
    Type: Fredoka (rounded, friendly) for headings, Atkinson Hyperlegible (made for low-vision readers) for everything else. */
 :root {
   --bg: #F4F4F8; --surface: #FFFFFF; --soft: #EBEBF2; --ink: #1A2433; --muted: #4A5568;
@@ -2897,8 +2897,10 @@ function cloudQueue() {
 }
 
 // Read everything from Supabase. The first run copies the starter dishes and meal ideas into the tables.
+const viewSnap = () => JSON.stringify([state, ui.plan, ui.checked, ui.done, RECIPES, COMBOS]);
 async function cloudPull(first) {
   if (cloud.timer || cloud.busy) return;
+  const before = first ? '' : viewSnap();
   try {
     const [dRows, iRows, hRows, wRows] = await Promise.all([
       sb('GET', 'ft_dishes?select=*&order=sort_order'),
@@ -2932,7 +2934,7 @@ async function cloudPull(first) {
       const w = {}; wRows.forEach(x => { w[x.week_start] = x.data; });
       weeks = w; state = st;
       const key = (state.wkKey && weeks[state.wkKey]) ? state.wkKey : (weeks[state.start] ? state.start : Object.keys(weeks).sort()[0]);
-      if (key && weeks[key] && Array.isArray(weeks[key].plan && weeks[key].plan.slots) && weeks[key].plan.slots.length === 21) {
+      if (key && weeks[key] && Array.isArray(weeks[key].plan && weeks[key].plan.slots) && (weeks[key].plan.slots.length === 28 || weeks[key].plan.slots.length === 21)) {
         const wk = weeks[key]; WK_FIELDS.forEach(k => { if (wk[k] !== undefined) state[k] = wk[k]; });
         state.wkKey = key; ui.plan = wk.plan; ui.checked = wk.checked || {}; ui.done = wk.done || {};
         if (first) { ui.day = todayIdx(); ui.view = 'results'; }
@@ -2947,13 +2949,50 @@ async function cloudPull(first) {
     if (dRows.length) { cloud.last.dishes = {}; RECIPES.map(dishToRow).forEach(r => { if (!legacy.includes(r.id)) cloud.last.dishes[r.id] = JSON.stringify({ ...r, updated_at: 0 }); }); }
     await cloudPush();
     if (cloud.status !== 'offline') cloudSet('live');
-    if (first || dRows.length || hRows.length) render();
+    const editing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+    if (first || (viewSnap() !== before && !editing)) render(); else if (editing && viewSnap() !== before) cloud.stale = true;
   } catch (e) { cloud.applying = false; cloudSet("offline"); }
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && cloud.status !== 'connecting') cloudPull(false); });
+
+// ===== Live updates: other phones' changes appear within a second or two =====
+// Plain WebSocket to Supabase Realtime (Phoenix protocol). Any change event triggers a normal pull; a slow poll covers dropped sockets.
+const rt = { ws: null, ref: 0, hb: null, retry: 0, wake: null, poll: null };
+function rtPull(tries) {
+  clearTimeout(rt.wake);
+  rt.wake = setTimeout(() => {
+    if (document.hidden) return;                                   // the visibility pull handles it when the app comes back
+    if (cloud.timer || cloud.busy) { if ((tries || 0) < 8) rtPull((tries || 0) + 1); return; }   // our own save is in flight: try again shortly
+    cloudPull(false);
+  }, 700);
+}
+function rtSend(topic, event, payload) { try { rt.ws.send(JSON.stringify({ topic, event, payload, ref: String(++rt.ref) })); } catch (e) { /* socket closed */ } }
+function rtConnect() {
+  if (typeof WebSocket === 'undefined') return;
+  clearInterval(rt.hb);
+  try {
+    const ws = new WebSocket(SB_URL.replace('https', 'wss') + '/realtime/v1/websocket?apikey=' + SB_KEY + '&vsn=1.0.0');
+    rt.ws = ws;
+    ws.onopen = () => {
+      rt.retry = 0;
+      rtSend('realtime:ft', 'phx_join', { config: { broadcast: { self: false }, presence: { key: '' }, postgres_changes: ['ft_dishes', 'ft_meal_ideas', 'ft_household', 'ft_weeks'].map(table => ({ event: '*', schema: 'public', table })) } });
+      rt.hb = setInterval(() => rtSend('phoenix', 'heartbeat', {}), 25000);
+    };
+    ws.onmessage = m => { try { const d = JSON.parse(m.data); if (d.event === 'postgres_changes') rtPull(); } catch (e) { /* ignore */ } };
+    ws.onclose = ws.onerror = () => { if (rt.ws !== ws) return; rt.ws = null; clearInterval(rt.hb); rt.retry = Math.min(rt.retry + 1, 6); const t = setTimeout(rtConnect, 1000 * Math.pow(2, rt.retry)); if (t && t.unref) t.unref(); };
+  } catch (e) { /* realtime is optional; polling below still works */ }
+}
+function rtStart() {
+  rtConnect();
+  if (!rt.poll) { rt.poll = setInterval(() => { if (!document.hidden && !cloud.timer && !cloud.busy) cloudPull(false); }, 30000); if (rt.poll.unref) rt.poll.unref(); }
+  window.addEventListener && window.addEventListener('online', () => { if (!rt.ws) rtConnect(); cloudPull(false); });
+}
+
+document.addEventListener('focusout', () => { if (cloud.stale) { cloud.stale = false; setTimeout(render, 80); } });
 // ===== Boot =====
 load();
 { const rev = state.starterRev, added = mergeStarter(); if (added.length || state.starterRev !== rev) { saveRecipes(); save(); } }
 render();
-cloudPull(true).then(() => { if (cloud.status === 'connecting') cloudSet('offline'); });
+cloudPull(true).then(() => { if (cloud.status === 'connecting') cloudSet('offline'); rtStart(); });
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) navigator.serviceWorker.register('/sw.js').catch(() => {});
 </script></body></html>
